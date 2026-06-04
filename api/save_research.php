@@ -14,6 +14,13 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $role = $_SESSION['role'] ?? 'mahasiswa';
+    if ($role === 'dosen') {
+        http_response_code(403);
+        echo json_encode(["status" => "error", "message" => "Akses ditolak: Dosen hanya memiliki hak baca (Read-only)."]);
+        exit;
+    }
+
     // Get JSON payload
     $data = json_decode(file_get_contents('php://input'), true);
 

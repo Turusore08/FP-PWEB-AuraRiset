@@ -7,10 +7,12 @@ class Store {
     // Initial default state (loads from window.USER_SESSION if available, fallback to localStorage)
     const sessionUser = window.USER_SESSION?.username || localStorage.getItem('aurariset_username') || 'Peneliti Utama';
     const sessionEmail = window.USER_SESSION?.email || localStorage.getItem('aurariset_email') || 'peneliti@aurariset.ac.id';
+    const sessionRole = window.USER_SESSION?.role || localStorage.getItem('aurariset_role') || 'mahasiswa';
 
     this.state = {
       username: sessionUser,
       email: sessionEmail,
+      role: sessionRole,
       stats: {
         totalResearch: parseInt(localStorage.getItem('aurariset_stat_total') || '0'),
         papersScanned: parseInt(localStorage.getItem('aurariset_stat_papers') || '0'),
@@ -43,6 +45,11 @@ class Store {
     if (newState.email !== undefined && newState.email !== this.state.email) {
       this.state.email = newState.email;
       localStorage.setItem('aurariset_email', newState.email);
+      changed = true;
+    }
+    if (newState.role !== undefined && newState.role !== this.state.role) {
+      this.state.role = newState.role;
+      localStorage.setItem('aurariset_role', newState.role);
       changed = true;
     }
     if (newState.stats !== undefined) {

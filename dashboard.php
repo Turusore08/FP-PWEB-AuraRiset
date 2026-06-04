@@ -23,7 +23,8 @@ $email = htmlspecialchars($_SESSION['email']);
   <script>
     window.USER_SESSION = {
       username: <?php echo json_encode($_SESSION['username']); ?>,
-      email: <?php echo json_encode($_SESSION['email']); ?>
+      email: <?php echo json_encode($_SESSION['email']); ?>,
+      role: <?php echo json_encode($_SESSION['role']); ?>
     };
   </script>
 </head>
@@ -55,18 +56,36 @@ $email = htmlspecialchars($_SESSION['email']);
             Dashboard
           </button>
         </li>
+        <?php if ($_SESSION['role'] !== 'dosen'): ?>
         <li class="sidebar-menu-item">
           <button class="sidebar-menu-btn" data-view="research" id="nav-btn-research">
             <i class="fas fa-vial"></i>
             Mulai Penelitian
           </button>
         </li>
+        <?php endif; ?>
         <li class="sidebar-menu-item">
           <button class="sidebar-menu-btn" data-view="history" id="nav-btn-history">
             <i class="fas fa-history"></i>
             Histori
           </button>
         </li>
+        <?php if ($_SESSION['role'] === 'dosen' || $_SESSION['role'] === 'admin'): ?>
+        <li class="sidebar-menu-item">
+          <button class="sidebar-menu-btn" data-view="review" id="nav-btn-review">
+            <i class="fas fa-microscope"></i>
+            Evaluasi Riset
+          </button>
+        </li>
+        <?php endif; ?>
+        <?php if ($_SESSION['role'] === 'admin'): ?>
+        <li class="sidebar-menu-item">
+          <button class="sidebar-menu-btn" data-view="users" id="nav-btn-users">
+            <i class="fas fa-users-cog"></i>
+            Manajemen User
+          </button>
+        </li>
+        <?php endif; ?>
         <li class="sidebar-menu-item">
           <button class="sidebar-menu-btn" data-view="settings" id="nav-btn-settings">
             <i class="fas fa-user-cog"></i>
@@ -178,6 +197,7 @@ $email = htmlspecialchars($_SESSION['email']);
 
         <!-- B. CENTRAL INTERACTIVE PANEL -->
         <div class="middle-grid">
+          <?php if ($_SESSION['role'] !== 'dosen'): ?>
           <!-- Mulai Penelitian Card -->
           <div class="premium-card stagger-row" id="research-main-card">
             <div class="card-title-container">
@@ -220,6 +240,22 @@ $email = htmlspecialchars($_SESSION['email']);
               </div>
             </div>
           </div>
+          <?php else: ?>
+          <!-- Greeting Card for Dosen -->
+          <div class="premium-card stagger-row" id="research-main-card" style="display: flex; flex-direction: column; justify-content: center; min-height: 320px; background: linear-gradient(135deg, rgba(212, 175, 55, 0.05) 0%, rgba(17, 21, 32, 0.8) 100%); border: 1px solid rgba(212, 175, 55, 0.15);">
+            <div class="card-title-container">
+              <h2 class="card-title" style="color: var(--color-gold); font-size: 1.5rem;">
+                <i class="fas fa-graduation-cap"></i>
+                Panel Evaluator Dosen
+              </h2>
+            </div>
+            <p class="card-desc" style="font-size: 1.05rem; line-height: 1.7; color: #e2e8f0; margin-top: 1rem;">
+              Selamat datang di sistem AuraRiset, <strong>Bapak/Ibu Dosen Reviewer</strong>.<br><br>
+              Sebagai reviewer, Anda memiliki hak akses penuh untuk <strong>membaca, mengevaluasi, dan meninjau</strong> kesenjangan riset (research gaps) yang telah dipetakan oleh seluruh mahasiswa.<br><br>
+              Gunakan menu <strong>Evaluasi Riset</strong> di sidebar untuk melihat daftar riset mahasiswa secara real-time.
+            </p>
+          </div>
+          <?php endif; ?>
 
           <!-- Histori Terbaru Table -->
           <div class="premium-card stagger-row" id="history-recent-card">
@@ -356,6 +392,67 @@ $email = htmlspecialchars($_SESSION['email']);
         </div>
       </div>
 
+      <!-- ==================== VIEW 3.5: REVIEW VIEW (DOSEN & ADMIN) ==================== -->
+      <?php if ($_SESSION['role'] === 'dosen' || $_SESSION['role'] === 'admin'): ?>
+      <div id="review-view" class="view-section">
+        <div class="premium-card section-full-width">
+          <div class="card-title-container">
+            <h2 class="card-title"><i class="fas fa-microscope"></i> Panel Evaluasi Penelitian Mahasiswa</h2>
+          </div>
+          <p class="card-desc">Berikut adalah seluruh daftar pemetaan gap riset yang dijalankan oleh para peneliti/mahasiswa di dalam sistem.</p>
+          
+          <div class="bottom-table-container" style="margin-top: 1.5rem;">
+            <table class="comparison-table" id="review-table">
+              <thead>
+                <tr>
+                  <th>Peneliti</th>
+                  <th>Tema / Topik Riset</th>
+                  <th>Tanggal Scan</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="4" style="text-align: center; color: var(--color-text-muted);">Memuat riwayat riset mahasiswa...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <?php endif; ?>
+
+      <!-- ==================== VIEW 3.6: USERS MANAGEMENT VIEW (ADMIN) ==================== -->
+      <?php if ($_SESSION['role'] === 'admin'): ?>
+      <div id="users-view" class="view-section">
+        <div class="premium-card section-full-width">
+          <div class="card-title-container">
+            <h2 class="card-title"><i class="fas fa-users-cog"></i> Manajemen Pengguna Sistem</h2>
+          </div>
+          <p class="card-desc">Kelola hak akses dan peranan akun pengguna AuraRiset secara langsung.</p>
+          
+          <div class="bottom-table-container" style="margin-top: 1.5rem;">
+            <table class="comparison-table" id="admin-users-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Role / Hak Akses</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="5" style="text-align: center; color: var(--color-text-muted);">Memuat daftar pengguna...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <?php endif; ?>
+
       <!-- ==================== VIEW 4: SETTINGS VIEW ==================== -->
       <div id="settings-view" class="view-section">
         <div class="settings-grid">
@@ -369,7 +466,13 @@ $email = htmlspecialchars($_SESSION['email']);
             <div class="settings-profile-info">
               <h3><?php echo $username; ?></h3>
               <p>Institusi AuraRiset Global</p>
-              <span class="profile-role-badge">Peneliti Utama</span>
+              <span class="profile-role-badge">
+                <?php 
+                  if ($_SESSION['role'] === 'admin') echo 'Administrator';
+                  elseif ($_SESSION['role'] === 'dosen') echo 'Reviewer / Dosen';
+                  else echo 'Peneliti / Mahasiswa';
+                ?>
+              </span>
             </div>
           </div>
 

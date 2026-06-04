@@ -361,10 +361,16 @@ export class Research {
 
     historyList.slice(0, 5).forEach((item) => {
       const date = new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+      const isReviewer = window.USER_SESSION?.role === 'admin' || window.USER_SESSION?.role === 'dosen';
+      const authorBadge = isReviewer ? `<span style="font-size: 0.75rem; color: var(--color-gold); display: block; margin-top: 0.25rem;"><i class="fas fa-user"></i> ${item.author || 'Mahasiswa'}</span>` : '';
+
       const tr = document.createElement('tr');
       tr.className = 'stagger-row visible';
       tr.innerHTML = `
-        <td class="research-title-cell" title="${item.topic}">${item.topic}</td>
+        <td class="research-title-cell" title="${item.topic}">
+          ${item.topic}
+          ${authorBadge}
+        </td>
         <td class="date-cell">${date}</td>
         <td>
           <div class="status-pill-container">
@@ -403,6 +409,9 @@ export class Research {
     historyList.forEach((item) => {
       const date = new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
       const countPapers = item.results ? item.results.length : 3;
+      const isReviewer = window.USER_SESSION?.role === 'admin' || window.USER_SESSION?.role === 'dosen';
+      const authorMeta = isReviewer ? `<span><i class="fas fa-user"></i> ${item.author || 'Mahasiswa'}</span>` : '';
+      const deleteBtn = window.USER_SESSION?.role === 'dosen' ? '' : '<button class="btn-icon delete" title="Hapus"><i class="fas fa-trash-alt"></i></button>';
 
       const card = document.createElement('div');
       card.className = 'history-item-card stagger-row visible';
@@ -412,6 +421,7 @@ export class Research {
           <div class="h-card-info">
             <h3>${item.topic}</h3>
             <div class="h-card-meta">
+              ${authorMeta}
               <span><i class="far fa-calendar-alt"></i> ${date}</span>
               <span><i class="fas fa-cubes"></i> ${countPapers} Papers</span>
               <span><i class="fas fa-circle" style="color: var(--color-gold); font-size: 0.5rem;"></i> Completed</span>
@@ -420,40 +430,43 @@ export class Research {
         </div>
         <div class="h-card-actions">
           <button class="btn-icon view-history-btn" title="Lihat Ulang"><i class="fas fa-eye"></i></button>
-          <button class="btn-icon delete" title="Hapus"><i class="fas fa-trash-alt"></i></button>
+          ${deleteBtn}
         </div>
       `;
 
       grid.appendChild(card);
 
       // Delete scan triggers
-      card.querySelector('.delete').addEventListener('click', async (e) => {
-        e.stopPropagation();
-        if (!confirm('Apakah Anda yakin ingin menghapus analisis penelitian ini?')) return;
+      const deleteBtnEl = card.querySelector('.delete');
+      if (deleteBtnEl) {
+        deleteBtnEl.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (!confirm('Apakah Anda yakin ingin menghapus analisis penelitian ini?')) return;
 
-        try {
-          const response = await fetch('api/delete_history.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id_chat: item.id_chat })
-          });
-          const result = await response.json();
+          try {
+            const response = await fetch('api/delete_history.php', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id_chat: item.id_chat })
+            });
+            const result = await response.json();
 
-          if (result.status === 'success') {
-            card.style.transform = 'translateX(-20px)';
-            card.style.opacity = '0';
-            setTimeout(async () => {
-              card.remove();
-              await Research.loadHistory();
-            }, 400);
-            ToastFactory.show('Dihapus', 'Histori berhasil dihapus dari arsip.', 'info');
-          } else {
-            ToastFactory.show('Error', result.message || 'Gagal menghapus riwayat.', 'error');
+            if (result.status === 'success') {
+              card.style.transform = 'translateX(-20px)';
+              card.style.opacity = '0';
+              setTimeout(async () => {
+                card.remove();
+                await Research.loadHistory();
+              }, 400);
+              ToastFactory.show('Dihapus', 'Histori berhasil dihapus dari arsip.', 'info');
+            } else {
+              ToastFactory.show('Error', result.message || 'Gagal menghapus riwayat.', 'error');
+            }
+          } catch (err) {
+            ToastFactory.show('Error', 'Gagal menghubungi server database.', 'error');
           }
-        } catch (err) {
-          ToastFactory.show('Error', 'Gagal menghubungi server database.', 'error');
-        }
-      });
+        });
+      }
 
       // View history triggers
       card.querySelector('.view-history-btn').addEventListener('click', () => {

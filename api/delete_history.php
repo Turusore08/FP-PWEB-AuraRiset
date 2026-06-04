@@ -23,13 +23,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    $role = $_SESSION['role'] ?? 'mahasiswa';
+    if ($role === 'dosen') {
+        http_response_code(403);
+        echo json_encode(["status" => "error", "message" => "Akses ditolak: Dosen tidak diizinkan menghapus data riset."]);
+        exit;
+    }
+
     try {
-        // Enforce user ownership in query logic to prevent SQL privilege breaches
-        $stmt = $conn->prepare("DELETE FROM chat WHERE id_chat = :id_chat AND user_id = :user_id");
-        $stmt->execute([
-            ':id_chat' => $id_chat,
-            ':user_id' => $user_id
-        ]);
+        if ($role === 'admin') {
+            // Admin can delete any chat
+            $stmt = $conn->prepare("DELETE FROM chat WHERE id_chat = :id_chat");
+            $stmt->execute([':id_chat' => $id_chat]);
+        } else {
+            // Mahasiswa can delete only their own
+            $stmt = $conn->prepare("DELETE FROM chat WHERE id_chat = :id_chat AND user_id = :user_id");
+            $stmt->execute([
+                ':id_chat' => $id_chat,
+                ':user_id' => $user_id
+            ]);
+        }
 
         if ($stmt->rowCount() > 0) {
             echo json_encode(["status" => "success", "message" => "Riwayat riset berhasil dihapus dari database."]);

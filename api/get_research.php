@@ -14,15 +14,29 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 try {
-    // Read chats and documents counts from PostgreSQL
-    $stmt = $conn->prepare("SELECT id_chat, history_chat FROM chat WHERE user_id = :user_id ORDER BY id_chat DESC");
-    $stmt->execute([':user_id' => $user_id]);
-    $chats = $stmt->fetchAll();
+    $role = $_SESSION['role'] ?? 'mahasiswa';
 
-    // Get count of uploaded documents
-    $stmtDoc = $conn->prepare("SELECT COUNT(*) as count FROM dokumen WHERE user_id = :user_id");
-    $stmtDoc->execute([':user_id' => $user_id]);
-    $docCount = $stmtDoc->fetch()['count'];
+    if ($role === 'admin' || $role === 'dosen') {
+        // Read all chats with investigator usernames
+        $stmt = $conn->prepare("SELECT c.id_chat, c.history_chat, u.username FROM chat c JOIN users u ON c.user_id = u.id ORDER BY c.id_chat DESC");
+        $stmt->execute();
+        $chats = $stmt->fetchAll();
+
+        // Get total count of all uploaded documents
+        $stmtDoc = $conn->prepare("SELECT COUNT(*) as count FROM dokumen");
+        $stmtDoc->execute();
+        $docCount = $stmtDoc->fetch()['count'];
+    } else {
+        // Read chats and documents counts from PostgreSQL for current user only
+        $stmt = $conn->prepare("SELECT id_chat, history_chat FROM chat WHERE user_id = :user_id ORDER BY id_chat DESC");
+        $stmt->execute([':user_id' => $user_id]);
+        $chats = $stmt->fetchAll();
+
+        // Get count of uploaded documents
+        $stmtDoc = $conn->prepare("SELECT COUNT(*) as count FROM dokumen WHERE user_id = :user_id");
+        $stmtDoc->execute([':user_id' => $user_id]);
+        $docCount = $stmtDoc->fetch()['count'];
+    }
 
     $historyList = [];
     foreach ($chats as $row) {
@@ -32,7 +46,8 @@ try {
                 "id_chat" => $row['id_chat'],
                 "topic" => $decoded['topic'],
                 "results" => $decoded['results'],
-                "created_at" => $decoded['created_at'] ?? date('Y-m-d H:i:s')
+                "created_at" => $decoded['created_at'] ?? date('Y-m-d H:i:s'),
+                "author" => $row['username'] ?? $_SESSION['username']
             ];
         }
     }

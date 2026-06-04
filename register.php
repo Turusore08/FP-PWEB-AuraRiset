@@ -30,12 +30,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Securely hash password
                 $hashed_password = password_hash($password, PASSWORD_BCRYPT);
                 
+                // Get and validate role selection
+                $role = trim($_POST['role'] ?? 'mahasiswa');
+                if (!in_array($role, ['mahasiswa', 'dosen', 'admin'])) {
+                    $role = 'mahasiswa';
+                }
+
                 // Insert new researcher record
-                $stmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (:username, :email, :password)");
+                $stmt = $conn->prepare("INSERT INTO users (username, email, password, role) VALUES (:username, :email, :password, :role)");
                 $stmt->execute([
                     ':username' => $username,
                     ':email' => $email,
-                    ':password' => $hashed_password
+                    ':password' => $hashed_password,
+                    ':role' => $role
                 ]);
                 
                 $success_message = "Akun peneliti berhasil dibuat! Mengalihkan...";
@@ -45,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_id'] = $conn->lastInsertId();
                 $_SESSION['username'] = $username;
                 $_SESSION['email'] = $email;
+                $_SESSION['role'] = $role;
             }
         } catch (PDOException $e) {
             $error_message = "Gagal mendaftarkan akun: " . $e->getMessage();
@@ -112,6 +120,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <i class="fas fa-shield-alt input-icon"></i>
           <i class="far fa-eye toggle-password" id="toggle-confirm-icon" onclick="togglePasswordVisibility('reg-confirm', 'toggle-confirm-icon')"></i>
           <div class="validation-hint" id="confirm-hint">Ulangi kata sandi di atas dengan persis</div>
+        </div>
+
+        <!-- Role Access Selection Input -->
+        <div class="form-group-relative">
+          <select class="auth-input" name="role" id="reg-role" style="background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; outline: none; height: 50px;">
+            <option value="mahasiswa" style="background: #151821; color: #fff;">Mahasiswa (Peneliti)</option>
+            <option value="dosen" style="background: #151821; color: #fff;">Dosen (Reviewer)</option>
+            <option value="admin" style="background: #151821; color: #fff;">Admin (Administrator)</option>
+          </select>
+          <i class="fas fa-user-tag input-icon" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-gold); font-size: 1rem;"></i>
         </div>
 
         <button type="submit" class="btn-cta" style="width: 100%; justify-content: center; padding: 1rem; margin-top: 0.75rem;">

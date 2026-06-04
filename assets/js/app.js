@@ -52,6 +52,15 @@ function setupObservers() {
     const updatedState = store.getState();
     animateStats(updatedState.stats);
   });
+
+  // 4. Observer: Listen to view changes
+  events.subscribe('view:changed', (targetView) => {
+    if (targetView === 'users') {
+      loadAdminUsers();
+    } else if (targetView === 'review') {
+      loadReviewResearch();
+    }
+  });
 }
 
 /* --- STATS REACTIVE DIGITS ANIMATOR --- */
@@ -209,3 +218,168 @@ function initTableSearch() {
 
 // Expose Toast system globally to maintain backward compatibility with static forms
 window.showToast = ToastFactory.show;
+
+/* --- ADMIN & DOSEN DATA LOADERS --- */
+async function loadAdminUsers() {
+  const tbody = document.querySelector('#admin-users-table tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">Memuat data pengguna...</td></tr>`;
+
+  try {
+    const response = await fetch('api/admin_users.php');
+    const data = await response.json();
+
+    if (data.status === 'success') {
+      tbody.innerHTML = '';
+      if (data.users.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">Tidak ada pengguna lain terdaftar.</td></tr>`;
+        return;
+      }
+
+      data.users.forEach(user => {
+        const tr = document.createElement('tr');
+        tr.className = 'stagger-row visible';
+        tr.innerHTML = `
+          <td>${user.id}</td>
+          <td><strong>${user.username}</strong></td>
+          <td>${user.email}</td>
+          <td>
+            <select class="select-custom user-role-select" data-id="${user.id}" style="padding: 0.4rem 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; width: 150px; outline: none; cursor: pointer;">
+              <option value="mahasiswa" ${user.role === 'mahasiswa' ? 'selected' : ''} style="background: #151821; color: #fff;">Mahasiswa</option>
+              <option value="dosen" ${user.role === 'dosen' ? 'selected' : ''} style="background: #151821; color: #fff;">Dosen</option>
+              <option value="admin" ${user.role === 'admin' ? 'selected' : ''} style="background: #151821; color: #fff;">Admin</option>
+            </select>
+          </td>
+          <td>
+            <button class="btn-icon delete btn-delete-user" data-id="${user.id}" title="Hapus Akun" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer;"><i class="fas fa-trash-alt"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Bind role change
+      tbody.querySelectorAll('.user-role-select').forEach(select => {
+        select.addEventListener('change', async (e) => {
+          const userId = e.target.getAttribute('data-id');
+          const newRole = e.target.value;
+          await updateUserRole(userId, newRole);
+        });
+      });
+
+      // Bind user delete
+      tbody.querySelectorAll('.btn-delete-user').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const userId = btn.getAttribute('data-id');
+          if (confirm('Apakah Anda yakin ingin menghapus user ini beserta seluruh datanya?')) {
+            await deleteUser(userId);
+          }
+        });
+      });
+    } else {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ef4444; padding: 2rem;">Error: ${data.message}</td></tr>`;
+    }
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ef4444; padding: 2rem;">Gagal memuat data pengguna dari database.</td></tr>`;
+  }
+}
+
+async function updateUserRole(userId, role) {
+  try {
+    const response = await fetch('api/admin_users.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'update_role', user_id: userId, role })
+    });
+    const result = await response.json();
+    if (result.status === 'success') {
+      ToastFactory.show('Berhasil', 'Hak akses user diperbarui!', 'success');
+    } else {
+      ToastFactory.show('Error', result.message || 'Gagal merubah role.', 'error');
+    }
+  } catch (err) {
+    ToastFactory.show('Error', 'Terjadi kesalahan jaringan.', 'error');
+  }
+}
+
+async function deleteUser(userId) {
+  try {
+    const response = await fetch('api/admin_users.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete_user', user_id: userId })
+    });
+    const result = await response.json();
+    if (result.status === 'success') {
+      ToastFactory.show('Dihapus', 'User berhasil dihapus dari sistem.', 'info');
+      loadAdminUsers();
+    } else {
+      ToastFactory.show('Error', result.message || 'Gagal menghapus user.', 'error');
+    }
+  } catch (err) {
+    ToastFactory.show('Error', 'Terjadi kesalahan jaringan.', 'error');
+  }
+}
+
+async function loadReviewResearch() {
+  const tbody = document.querySelector('#review-table tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">Memuat riwayat riset mahasiswa...</td></tr>`;
+
+  try {
+    const response = await fetch('api/get_research.php');
+    const data = await response.json();
+
+    if (data.status === 'success') {
+      tbody.innerHTML = '';
+      if (data.history.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">Belum ada riwayat riset yang tersimpan.</td></tr>`;
+        return;
+      }
+
+      data.history.forEach(item => {
+        const date = new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        const tr = document.createElement('tr');
+        tr.className = 'stagger-row visible';
+        tr.innerHTML = `
+          <td><strong>${item.author || 'Mahasiswa'}</strong></td>
+          <td>${item.topic}</td>
+          <td>${date}</td>
+          <td>
+            <button class="btn-icon btn-view-review" style="padding: 0.4rem 0.8rem; border-radius: 6px; background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.2); color: var(--color-gold); font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;"><i class="fas fa-eye"></i> Tinjau</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+
+        tr.querySelector('.btn-view-review').addEventListener('click', () => {
+          // Switch to dashboard
+          const dashBtn = document.querySelector('.sidebar-menu-btn[data-view="dashboard"]');
+          if (dashBtn) dashBtn.click();
+          
+          // Inject comparison table with research.js Comparison renderer
+          const tbodyComp = document.querySelector('.comparison-table tbody');
+          if (tbodyComp && item.results) {
+            tbodyComp.innerHTML = '';
+            item.results.forEach((res) => {
+              const trComp = document.createElement('tr');
+              trComp.className = 'stagger-row visible';
+              trComp.innerHTML = `
+                <td class="year-cell">${res.year}</td>
+                <td class="method-cell">${res.method}</td>
+                <td class="gap-cell">${res.gap}</td>
+                <td class="ai-summary-cell">${res.summary}</td>
+              `;
+              tbodyComp.appendChild(trComp);
+            });
+            ToastFactory.show('Peneliti: ' + (item.author || 'Mahasiswa'), `Memuat gap riset: "${item.topic}"`, 'success');
+          }
+        });
+      });
+    } else {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #ef4444; padding: 2rem;">Error: ${data.message}</td></tr>`;
+    }
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #ef4444; padding: 2rem;">Gagal memuat data riset dari server.</td></tr>`;
+  }
+}
