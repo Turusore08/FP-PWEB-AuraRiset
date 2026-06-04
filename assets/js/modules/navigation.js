@@ -51,7 +51,7 @@ export class Navigation {
           e.preventDefault();
           ToastFactory.show('Info', 'Mencoba keluar dari sesi sistem...', 'info');
           setTimeout(() => {
-            window.location.href = 'login.html';
+            window.location.href = 'logout.php';
           }, 1200);
           return;
         }

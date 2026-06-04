@@ -4,14 +4,17 @@ import { events } from './events.js';
 
 class Store {
   constructor() {
-    // Initial default state (loads from localStorage where available)
+    // Initial default state (loads from window.USER_SESSION if available, fallback to localStorage)
+    const sessionUser = window.USER_SESSION?.username || localStorage.getItem('aurariset_username') || 'Peneliti Utama';
+    const sessionEmail = window.USER_SESSION?.email || localStorage.getItem('aurariset_email') || 'peneliti@aurariset.ac.id';
+
     this.state = {
-      username: localStorage.getItem('aurariset_username') || 'Peneliti Utama',
-      email: localStorage.getItem('aurariset_email') || 'peneliti@aurariset.ac.id',
+      username: sessionUser,
+      email: sessionEmail,
       stats: {
-        totalResearch: parseInt(localStorage.getItem('aurariset_stat_total') || '31396'),
-        papersScanned: parseInt(localStorage.getItem('aurariset_stat_papers') || '61'),
-        newGaps: parseInt(localStorage.getItem('aurariset_stat_gaps') || '21')
+        totalResearch: parseInt(localStorage.getItem('aurariset_stat_total') || '0'),
+        papersScanned: parseInt(localStorage.getItem('aurariset_stat_papers') || '0'),
+        newGaps: parseInt(localStorage.getItem('aurariset_stat_gaps') || '0')
       }
     };
   }

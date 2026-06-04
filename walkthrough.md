@@ -1,51 +1,45 @@
-# Walkthrough — Progressive Enhancement & CORS Fallback Animation Fix
+# Walkthrough — Secure PHP PostgreSQL Dynamic Integration
 
-This walkthrough documents a critical visibility fix made to the **AuraRiset** landing page (`index.html`) to ensure that all layout content is 100% visible and readable under both standard web servers (`http://`) and local offline file browsers (`file://` protocols).
-
----
-
-## The Problem Identified
-When opening `index.html` locally by double-clicking the file in Windows Explorer (the `file://` protocol), modern browsers block ES6 Module script tags (`type="module"`) due to strict **CORS (Cross-Origin Resource Sharing)** security policies.
-
-1. This block prevented `app.js` and all nested feature scripts from executing.
-2. Because the original CSS stylesheet defined `.stagger-row` with a default of `opacity: 0` (expecting JavaScript to reveal them dynamically as the user scrolls), the entire page below the header menu appeared **completely blank and empty** when viewed offline.
+This walkthrough documents the full integration of the **AuraRiset** platform's dynamic PHP backend, connecting its modern ES6 JavaScript frontend directly to a PostgreSQL database for session-based user authentication, SOTA gap analysis records, and secure PDF file uploads.
 
 ---
 
-## The Solution: Progressive Enhancement
+## Key Achievements
 
-To solve this issue, we decoupled the initial page layout visibility from the successful execution of JavaScript, ensuring that the interface is always readable even if ES6 modules are blocked.
+### 1. Unified Session Injection & Store Sync
+* **The Bridge:** Added a script block in `dashboard.php` that translates the authenticated PHP session values (`$_SESSION['username']` and `$_SESSION['email']`) into a global `window.USER_SESSION` object.
+* **Store Initialization:** Updated `assets/js/core/store.js` to prioritize `window.USER_SESSION` values over stale `localStorage` records. This resolves data mismatch bugs when switching users or editing credentials.
 
-### 1. Updated CSS Rules (`assets/css/style.css`)
-We removed the default `opacity: 0` rule from all `.stagger-row` elements. Instead, the animation state is now only applied if the element also contains a newly defined class `.stagger-init`:
+### 2. Live AJAX PDF Uploader with Progress Tracking
+* **Native XHR:** Replaced the simulated upload intervals in `assets/js/modules/research.js` with a robust `XMLHttpRequest` upload pipeline.
+* **Progress Tracking:** Tied `xhr.upload.onprogress` directly to the dashboard's circular and line progress bars, providing real-time upload speed and completion percentages.
+* **Physical to DB Mapping:** Successful uploads are stored securely inside the `/uploads` directory under randomized hashed filenames (to prevent file execution / path traversals), and their paths are registered under the active `user_id` inside the `dokumen` table.
 
-```css
-/* Only hide and animate if initialized by JavaScript */
-.stagger-row.stagger-init {
-  opacity: 0;
-  transform: translateY(10px);
-  transition: transform 0.4s ease, opacity 0.4s ease;
-}
+### 3. Dynamic SOTA Scan CRUD Integration
+* **Write (Create):** Completing SOTA scanner step simulations triggers a background POST fetch to `api/save_research.php`.
+* **Read:** On page load, `Research.loadHistory()` performs a fetch request to `api/get_research.php` to retrieve all scans and uploaded files from the database. It:
+  * Animates the statistical panels ("Total Penelitian", "Paper Dianalisis", and "Analisis Gap Terbaru") based on live database query aggregates.
+  * Populates the "Histori Terbaru" table and history sidebar list dynamically.
+  * Auto-injects the most recent scan's comparison rows directly into the dashboard table.
+* **Update:** Intercepted the user profile settings form in `assets/js/app.js` to send updates via fetch to `api/update_profile.php`, parsing validation warnings (like duplicate email/username) and sync-updating the UI dynamically.
+* **Delete:** Clicking delete on a history card prompts a POST fetch to `api/delete_history.php`, smoothly removing the record from the database and updating the dashboard metrics.
 
-.stagger-row.stagger-init.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-```
-
-### 2. Dynamic Class Injection (`assets/js/modules/navigation.js` & `research.js`)
-We modified the scroll animation routines to inject the `.stagger-init` class dynamically on page load and during table injections:
-
-```javascript
-document.querySelectorAll('.stagger-row').forEach(el => {
-  el.classList.add('stagger-init'); // Apply animation hidden state
-  observer.observe(el);             // Observe to fade back in on scroll
-});
-```
+### 4. Legacy File Cleanup & Routing Safety
+* **Deleted Static Layouts:** Removed `login.html`, `register.html`, and `dashboard.html` to prevent researchers from accessing unauthenticated static shells.
+* **Strict Session Gates:** Direct requests to `dashboard.php` without active sessions automatically redirect to `login.php` on the server-side.
+* **Routing Updates:** Updated all routing links across `index.html`, `login.php`, `register.php`, and `assets/js/modules/navigation.js` to route cleanly using `.php` pages.
 
 ---
 
-## Verification & UX Outcome
+## Verification Run Outcome
 
-* **Standard Web Server (`http://localhost:8000`)**: The Intersection Observer runs perfectly. Elements fade and slide into view with premium micro-animations as the user scrolls down the landing page.
-* **Offline Local Files (`file:///.../index.html`)**: If ES6 modules are blocked by the browser, the `.stagger-init` class is never added. All sections (Tentang Kami, Fitur Layanan, Spektrum Visual, FAQ, Contact Form) remain **fully visible (`opacity: 1`) and readable**, eliminating the empty screen layout bug.
+1. **User Sign Up & Login:**
+   * Successful registrations securely hash passwords with `PASSWORD_BCRYPT` and create active sessions.
+   * Dashboard renders username initials dynamically.
+2. **Interactive Uploads & Scans:**
+   * Restricts files to PDFs less than 10 MB.
+   * Uploading a research PDF tracks actual progression and immediately launches the SOTA gap analyzer.
+   * Database inserts and history updates complete in milliseconds.
+3. **Responsive UI:**
+   * Deleting history items triggers a CSS translateX transition before updating database counts.
+   * View details can be re-loaded onto the dashboard SOTA table instantly by clicking "Lihat Ulang".

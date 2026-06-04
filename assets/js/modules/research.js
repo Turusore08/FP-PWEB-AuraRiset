@@ -4,7 +4,7 @@ import { events } from '../core/events.js';
 import { store } from '../core/store.js';
 import { ToastFactory } from '../components/toast.js';
 
-// Simulated Research Database
+// Simulated Research Database fallback for new topics
 const simulatedGapDatabase = [
   {
     topic: "Optimasi Query Database Terdistribusi",
@@ -40,12 +40,17 @@ export class Research {
     Research.initDragAndDrop();
     Research.initResearchSimulation();
     
-    // Expose injectNewResults globally so that view click handlers from the history tab can invoke it
-    window.injectNewResults = Research.injectNewResults;
+    // Load historical scans from DB on page initialization
+    Research.loadHistory();
+    
+    // Expose injectNewResults globally to maintain backward compatibility
+    window.injectNewResults = (topicName) => {
+      Research.loadHistory();
+    };
   }
 
   /**
-   * Initialize Drag & Drop PDF Uploader
+   * Initialize Drag & Drop PDF Uploader with dynamic XHR progress tracking
    */
   static initDragAndDrop() {
     const dropZone = document.getElementById('drag-drop-zone');
@@ -102,22 +107,53 @@ export class Research {
       progressBarFill.style.width = '0%';
       progressPercent.textContent = '0%';
 
-      let progress = 0;
-      const uploadInterval = setInterval(() => {
-        progress += Math.floor(Math.random() * 15) + 5;
-        if (progress >= 100) {
-          progress = 100;
-          clearInterval(uploadInterval);
-          ToastFactory.show('Success', 'File berhasil diunggah. Mulai analisis...', 'success');
-          
-          setTimeout(() => {
-            progressContainer.style.display = 'none';
-            Research.runAIScanner(file.name.replace('.pdf', ''));
-          }, 800);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', 'upload.php', true);
+
+      // Track physical upload progress
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const percentComplete = Math.round((e.loaded / e.total) * 100);
+          progressBarFill.style.width = `${percentComplete}%`;
+          progressPercent.textContent = `${percentComplete}%`;
         }
-        progressBarFill.style.width = `${progress}%`;
-        progressPercent.textContent = `${progress}%`;
-      }, 100);
+      });
+
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+          if (xhr.status === 200) {
+            try {
+              const response = JSON.parse(xhr.responseText);
+              if (response.status === 'success') {
+                ToastFactory.show('Success', 'File berhasil diunggah. Mulai analisis...', 'success');
+                setTimeout(() => {
+                  progressContainer.style.display = 'none';
+                  Research.runAIScanner(file.name.replace('.pdf', ''));
+                }, 800);
+              } else {
+                ToastFactory.show('Error', response.message || 'Gagal mengunggah file.', 'error');
+                progressContainer.style.display = 'none';
+              }
+            } catch (err) {
+              ToastFactory.show('Error', 'Respons server tidak valid.', 'error');
+              progressContainer.style.display = 'none';
+            }
+          } else {
+            try {
+              const response = JSON.parse(xhr.responseText);
+              ToastFactory.show('Error', response.message || 'Gagal mengunggah file.', 'error');
+            } catch (err) {
+              ToastFactory.show('Error', 'Gagal mengunggah file ke server.', 'error');
+            }
+            progressContainer.style.display = 'none';
+          }
+        }
+      };
+
+      xhr.send(formData);
     }
   }
 
@@ -147,7 +183,7 @@ export class Research {
   }
 
   /**
-   * Simulated AI scanner overlay overlay
+   * SOTA scanner overlay pipeline simulation
    */
   static runAIScanner(topicName) {
     const overlay = document.getElementById('analysis-overlay');
@@ -162,7 +198,7 @@ export class Research {
     fill.style.width = '0%';
     overlay.classList.add('open');
 
-    // Emit event that scanning has started (Observer Pattern Event)
+    // Emit event that scanning has started
     events.publish('research:started', topicName);
 
     const steps = [
@@ -206,9 +242,29 @@ export class Research {
         }
 
         if (idx === steps.length - 1) {
-          setTimeout(() => {
+          setTimeout(async () => {
             overlay.classList.remove('open');
-            Research.injectNewResults(topicName);
+            
+            // Build the results payload
+            let match = simulatedGapDatabase.find(x => topicName.toLowerCase().includes(x.topic.toLowerCase()) || x.topic.toLowerCase().includes(topicName.toLowerCase()));
+            if (!match) {
+              const cleanTopic = topicName.charAt(0).toUpperCase() + topicName.slice(1);
+              match = {
+                topic: cleanTopic,
+                results: [
+                  { year: 2023, method: "State-of-the-Art Baseline", gap: `Akurasi masih inkonsisten jika diterapkan pada sub-topik ${cleanTopic}.`, summary: "Studi terdahulu tidak mengeksplorasi skalabilitas real-world." },
+                  { year: 2024, method: "Advanced Neural Framework", gap: `Overhead komputasi bertambah pesat tanpa efisiensi memori yang memadai.`, summary: "Model yang ada lambat beradaptasi pada variabilitas runtime." },
+                  { year: 2025, method: `AuraRiset Custom ${cleanTopic.split(' ')[0]}`, gap: "Belum teruji optimal pada data heterogen skala industri.", summary: `Menyisakan kesenjangan penting untuk penggabungan arsitektur terpadu.` }
+                ]
+              };
+            }
+
+            // Save results to PostgreSQL database via API
+            await Research.saveScanResult(match.topic, match.results);
+
+            // Publish SOTA completed event
+            events.publish('research:completed', match);
+            
             ToastFactory.show('Sukses', 'Analisis gap selesai ditambahkan ke dashboard!', 'success');
           }, 1000);
         }
@@ -217,33 +273,99 @@ export class Research {
   }
 
   /**
-   * Injecting matching topic results into DOM tables and structures.
-   * Handles local DOM injection, State Store modifications, and Event Publishes.
+   * Post scanning results to the backend API
    */
-  static injectNewResults(topicName) {
-    let match = simulatedGapDatabase.find(x => topicName.toLowerCase().includes(x.topic.toLowerCase()) || x.topic.toLowerCase().includes(topicName.toLowerCase()));
-    
-    if (!match) {
-      const cleanTopic = topicName.charAt(0).toUpperCase() + topicName.slice(1);
-      match = {
-        topic: cleanTopic,
-        results: [
-          { year: 2023, method: "State-of-the-Art Baseline", gap: `Akurasi masih inkonsisten jika diterapkan pada sub-topik ${cleanTopic}.`, summary: "Studi terdahulu tidak mengeksplorasi skalabilitas real-world." },
-          { year: 2024, method: "Advanced Neural Framework", gap: `Overhead komputasi bertambah pesat tanpa efisiensi memori yang memadai.`, summary: "Model yang ada lambat beradaptasi pada variabilitas runtime." },
-          { year: 2025, method: `AuraRiset Custom ${cleanTopic.split(' ')[0]}`, gap: "Belum teruji optimal pada data heterogen skala industri.", summary: `Menyisakan kesenjangan penting untuk penggabungan arsitektur terpadu.` }
-        ]
-      };
+  static async saveScanResult(topic, results) {
+    try {
+      const response = await fetch('api/save_research.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, results })
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        // Load database records dynamically to keep dashboard updated
+        await Research.loadHistory();
+      } else {
+        ToastFactory.show('Error', data.message || 'Gagal menyimpan analisis riset.', 'error');
+      }
+    } catch (err) {
+      console.error('Failed to communicate scan details with server:', err);
+      ToastFactory.show('Error', 'Gagal menghubungkan ke database server.', 'error');
+    }
+  }
+
+  /**
+   * Load SOTA records from PostgreSQL and sync metrics store + view grids
+   */
+  static async loadHistory() {
+    try {
+      const response = await fetch('api/get_research.php');
+      const data = await response.json();
+      if (data.status === 'success') {
+        // Enforce reactive state sync across digits animator
+        let totalGaps = 0;
+        data.history.forEach(item => {
+          totalGaps += (item.results ? item.results.length : 0);
+        });
+
+        store.updateState({
+          stats: {
+            totalResearch: data.history.length,
+            papersScanned: data.docCount,
+            newGaps: totalGaps
+          }
+        });
+
+        // Sync and render the tables
+        Research.renderRecentTable(data.history);
+        Research.renderHistoryGrid(data.history);
+
+        // Autofill SOTA comparison table with latest scan if entries exist
+        if (data.history.length > 0) {
+          const latest = data.history[0];
+          Research.renderComparisonTable(latest.topic, latest.results);
+        } else {
+          // Render default placeholder row if database is empty
+          const comparisonTbody = document.querySelector('.comparison-table tbody');
+          if (comparisonTbody) {
+            comparisonTbody.innerHTML = `
+              <tr>
+                <td colspan="4" style="text-align: center; color: var(--color-text-muted);">Masukkan tema penelitian di atas untuk memulai pemetaan gap riset...</td>
+              </tr>
+            `;
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to retrieve history logs:', err);
+    }
+  }
+
+  /**
+   * Populate Recent Table on Dashboard View
+   */
+  static renderRecentTable(historyList) {
+    const tbody = document.querySelector('.recent-table tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    if (historyList.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="3" style="text-align: center; color: var(--color-text-muted);">Belum ada riwayat penelitian.</td>
+        </tr>
+      `;
+      return;
     }
 
-    // 1. Update Histori Terbaru Table
-    const historyTbody = document.querySelector('.recent-table tbody');
-    if (historyTbody) {
-      const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    historyList.slice(0, 5).forEach((item) => {
+      const date = new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
       const tr = document.createElement('tr');
-      tr.className = 'stagger-row stagger-init';
+      tr.className = 'stagger-row visible';
       tr.innerHTML = `
-        <td class="research-title-cell" title="${match.topic}">${match.topic}</td>
-        <td class="date-cell">${today}</td>
+        <td class="research-title-cell" title="${item.topic}">${item.topic}</td>
+        <td class="date-cell">${date}</td>
         <td>
           <div class="status-pill-container">
             <div class="table-progress-bar"><div class="table-progress-fill" style="width: 100%"></div></div>
@@ -251,48 +373,47 @@ export class Research {
           </div>
         </td>
       `;
-      historyTbody.insertBefore(tr, historyTbody.firstChild);
-      setTimeout(() => tr.classList.add('visible'), 50);
+      tbody.appendChild(tr);
+    });
+  }
 
-      if (historyTbody.children.length > 5) {
-        historyTbody.removeChild(historyTbody.lastChild);
-      }
+  /**
+   * Populate History Grid tab
+   */
+  static renderHistoryGrid(historyList) {
+    const grid = document.querySelector('.history-card-grid');
+    const countText = document.getElementById('history-count-text');
+    if (!grid) return;
+
+    grid.innerHTML = '';
+    if (countText) {
+      countText.textContent = `Menampilkan total ${historyList.length} riwayat penelitian`;
     }
 
-    // 2. Update Table Perbandingan Paper
-    const comparisonTbody = document.querySelector('.comparison-table tbody');
-    if (comparisonTbody) {
-      comparisonTbody.innerHTML = '';
-      match.results.forEach((res, i) => {
-        const tr = document.createElement('tr');
-        tr.className = 'stagger-row stagger-init';
-        tr.innerHTML = `
-          <td class="year-cell">${res.year}</td>
-          <td class="method-cell">${res.method}</td>
-          <td class="gap-cell">${res.gap}</td>
-          <td class="ai-summary-cell">${res.summary}</td>
-        `;
-        comparisonTbody.appendChild(tr);
-        setTimeout(() => tr.classList.add('visible'), (i + 1) * 150);
-      });
+    if (historyList.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; color: var(--color-text-muted); padding: 3rem;">
+          <i class="fas fa-history" style="font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.3; color: var(--color-gold);"></i>
+          <p>Belum ada riwayat penelitian terdokumentasi.</p>
+        </div>
+      `;
+      return;
     }
 
-    // 3. Update Histori View List tab
-    const historyCardGrid = document.querySelector('.history-card-grid');
-    if (historyCardGrid) {
-      const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-      const countRand = Math.floor(Math.random() * 4) + 3;
+    historyList.forEach((item) => {
+      const date = new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+      const countPapers = item.results ? item.results.length : 3;
 
       const card = document.createElement('div');
-      card.className = 'history-item-card stagger-row stagger-init';
+      card.className = 'history-item-card stagger-row visible';
       card.innerHTML = `
         <div class="h-card-left">
           <div class="h-card-icon"><i class="fas fa-file-invoice"></i></div>
           <div class="h-card-info">
-            <h3>${match.topic}</h3>
+            <h3>${item.topic}</h3>
             <div class="h-card-meta">
-              <span><i class="far fa-calendar-alt"></i> ${today}</span>
-              <span><i class="fas fa-cubes"></i> ${countRand} Papers</span>
+              <span><i class="far fa-calendar-alt"></i> ${date}</span>
+              <span><i class="fas fa-cubes"></i> ${countPapers} Papers</span>
               <span><i class="fas fa-circle" style="color: var(--color-gold); font-size: 0.5rem;"></i> Completed</span>
             </div>
           </div>
@@ -303,43 +424,73 @@ export class Research {
         </div>
       `;
 
-      historyCardGrid.insertBefore(card, historyCardGrid.firstChild);
-      setTimeout(() => card.classList.add('visible'), 50);
+      grid.appendChild(card);
 
-      // Bind Hapus trigger
-      card.querySelector('.delete').addEventListener('click', (e) => {
+      // Delete scan triggers
+      card.querySelector('.delete').addEventListener('click', async (e) => {
         e.stopPropagation();
-        card.style.transform = 'translateX(-20px)';
-        card.style.opacity = '0';
-        setTimeout(() => card.remove(), 400);
-        ToastFactory.show('Dihapus', 'Histori berhasil dihapus dari arsip.', 'info');
-        
-        // Dec stats gap via Central State Store
-        const currentStats = store.getState().stats;
-        store.updateState({
-          stats: { newGaps: Math.max(0, currentStats.newGaps - 1) }
-        });
+        if (!confirm('Apakah Anda yakin ingin menghapus analisis penelitian ini?')) return;
+
+        try {
+          const response = await fetch('api/delete_history.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_chat: item.id_chat })
+          });
+          const result = await response.json();
+
+          if (result.status === 'success') {
+            card.style.transform = 'translateX(-20px)';
+            card.style.opacity = '0';
+            setTimeout(async () => {
+              card.remove();
+              await Research.loadHistory();
+            }, 400);
+            ToastFactory.show('Dihapus', 'Histori berhasil dihapus dari arsip.', 'info');
+          } else {
+            ToastFactory.show('Error', result.message || 'Gagal menghapus riwayat.', 'error');
+          }
+        } catch (err) {
+          ToastFactory.show('Error', 'Gagal menghubungi server database.', 'error');
+        }
       });
 
-      // Bind Lihat Ulang trigger
+      // View history triggers
       card.querySelector('.view-history-btn').addEventListener('click', () => {
         const dashBtn = document.querySelector('.sidebar-menu-btn[data-view="dashboard"]');
         if (dashBtn) dashBtn.click();
-        Research.injectNewResults(match.topic);
+        Research.renderComparisonTable(item.topic, item.results);
       });
+    });
+  }
+
+  /**
+   * Render comparison rows inside bottom table mapping
+   */
+  static renderComparisonTable(topic, results) {
+    const tbody = document.querySelector('.comparison-table tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    if (!results || results.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" style="text-align: center; color: var(--color-text-muted);">Tidak ada data komparasi.</td>
+        </tr>
+      `;
+      return;
     }
 
-    // 4. Update Stats variables in Central Store (Reactive Store notifies events)
-    const currentStats = store.getState().stats;
-    store.updateState({
-      stats: {
-        totalResearch: currentStats.totalResearch + 1,
-        papersScanned: currentStats.papersScanned + 3,
-        newGaps: currentStats.newGaps + 1
-      }
+    results.forEach((res, i) => {
+      const tr = document.createElement('tr');
+      tr.className = 'stagger-row visible';
+      tr.innerHTML = `
+        <td class="year-cell">${res.year}</td>
+        <td class="method-cell">${res.method}</td>
+        <td class="gap-cell">${res.gap}</td>
+        <td class="ai-summary-cell">${res.summary}</td>
+      `;
+      tbody.appendChild(tr);
     });
-
-    // Emit event that research is completed (Observer Pattern Event)
-    events.publish('research:completed', match);
   }
 }

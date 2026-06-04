@@ -144,7 +144,7 @@ function initSettingsForm() {
   const form = document.getElementById('settings-profile-form');
   if (!form) return;
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const username = document.getElementById('set-username').value.trim();
@@ -155,9 +155,35 @@ function initSettingsForm() {
       return;
     }
 
-    // Update global state store (Singleton automatically triggers event notifications)
-    store.updateState({ username, email });
-    ToastFactory.show('Berhasil', 'Pengaturan akun peneliti diperbarui!', 'success');
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch('api/update_profile.php', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        const finalUrl = new URL(response.url);
+        const errorParam = finalUrl.searchParams.get('error');
+
+        if (errorParam) {
+          if (errorParam === 'duplicate_credentials') {
+            ToastFactory.show('Error', 'Username atau Email sudah terdaftar!', 'error');
+          } else {
+            ToastFactory.show('Error', 'Gagal memperbarui profil: ' + decodeURIComponent(errorParam), 'error');
+          }
+        } else {
+          // Update global state store (Singleton automatically triggers event notifications)
+          store.updateState({ username, email });
+          ToastFactory.show('Berhasil', 'Pengaturan akun peneliti diperbarui!', 'success');
+        }
+      } else {
+        ToastFactory.show('Error', 'Gagal menyimpan perubahan ke server.', 'error');
+      }
+    } catch (err) {
+      ToastFactory.show('Error', 'Terjadi kesalahan jaringan.', 'error');
+    }
   });
 }
 

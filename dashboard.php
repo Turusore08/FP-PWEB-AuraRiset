@@ -1,20 +1,35 @@
+<?php
+// --- AURARISET SECURE RESEARCHER DASHBOARD PANEL ---
+session_start();
+
+// Strict session check
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
+$user_id = $_SESSION['user_id'];
+$username = htmlspecialchars($_SESSION['username']);
+$email = htmlspecialchars($_SESSION['email']);
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AuraRiset — Automated Research Gap Analysis Dashboard</title>
-  
-  <meta name="description" content="Dashboard cerdas AuraRiset mempermudah analisis kesenjangan (research gap) secara otomatis menggunakan pemodelan bahasa canggih terintegrasi OpenAI.">
-  <meta name="keywords" content="analisis gap, research gap, studi literatur, penulisan paper, openAI, riset otomatis">
-  <meta name="author" content="AuraRiset Team">
-  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="assets/css/style.css">
+  <script>
+    window.USER_SESSION = {
+      username: <?php echo json_encode($_SESSION['username']); ?>,
+      email: <?php echo json_encode($_SESSION['email']); ?>
+    };
+  </script>
 </head>
 <body>
 
-  
+  <!-- Background Orbs and Particles -->
   <div class="aurora-bg">
     <div class="aurora-orb orb-gold"></div>
     <div class="aurora-orb orb-navy"></div>
@@ -23,7 +38,7 @@
 
   <div class="app-container">
 
-    
+    <!-- 1. SIDEBAR NAVIGATION -->
     <aside class="sidebar">
       <a href="index.html" class="sidebar-logo" id="logo-branding">
         <div class="logo-icon-container">
@@ -68,10 +83,10 @@
       </div>
     </aside>
 
-    
+    <!-- 2. MAIN CONTENT WRAPPER -->
     <main class="main-content">
 
-      
+      <!-- HEADER AREA (COMMON FOR ALL VIEWS) -->
       <header class="main-header">
         <div class="header-title-area">
           <h1 id="view-title">Dashboard</h1>
@@ -84,17 +99,17 @@
             <input type="text" class="search-input" placeholder="Cari analisis atau paper..." id="search-dashboard-table">
           </div>
 
-          
+          <!-- User Profile Dropdown -->
           <div class="profile-dropdown" id="profile-dropdown">
             <div class="profile-trigger" id="profile-trigger">
-              <div class="profile-avatar">P</div>
-              <span class="profile-name">Peneliti Utama</span>
+              <div class="profile-avatar"><?php echo strtoupper(substr($username, 0, 1)); ?></div>
+              <span class="profile-name"><?php echo $username; ?></span>
               <i class="fas fa-chevron-down"></i>
             </div>
             <div class="dropdown-menu">
               <div class="dropdown-header">
-                <div class="dropdown-header-name">Peneliti Utama</div>
-                <div class="dropdown-header-email">peneliti@aurariset.ac.id</div>
+                <div class="dropdown-header-name"><?php echo $username; ?></div>
+                <div class="dropdown-header-email"><?php echo $email; ?></div>
               </div>
               <a href="#" class="dropdown-link" onclick="document.getElementById('nav-btn-settings').click(); return false;">
                 <i class="fas fa-user-circle"></i> Profil Saya
@@ -103,7 +118,7 @@
                 <i class="fas fa-cog"></i> Pengaturan
               </a>
               <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 0.5rem 0;">
-              <a href="#" class="dropdown-link" onclick="document.getElementById('nav-btn-logout').click(); return false;" style="color: #ef4444;">
+              <a href="logout.php" class="dropdown-link" style="color: #ef4444;">
                 <i class="fas fa-sign-out-alt"></i> Logout
               </a>
             </div>
@@ -111,12 +126,12 @@
         </div>
       </header>
 
-      
+      <!-- ==================== VIEW 1: DASHBOARD HUB ==================== -->
       <div id="dashboard-view" class="view-section active">
 
-        
+        <!-- A. STATISTICAL PANEL -->
         <div class="stats-container">
-          
+          <!-- Total Penelitian Card -->
           <div class="stat-card stagger-row" id="stat-card-total">
             <div class="stat-header">
               <span class="stat-title">Total Penelitian</span>
@@ -131,14 +146,14 @@
             </div>
           </div>
 
-          
+          <!-- Paper Dianalisis Card -->
           <div class="stat-card stagger-row" id="stat-card-papers">
             <div class="stat-header">
               <span class="stat-title">Paper Dianalisis</span>
               <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
             </div>
             <div class="stat-value" id="count-paper">0</div>
-            
+            <!-- 3D paper stack icon -->
             <div class="paper-stack-visual">
               <div class="paper-layer"></div>
               <div class="paper-layer"></div>
@@ -146,7 +161,7 @@
             </div>
           </div>
 
-          
+          <!-- Analisis Gap Terbaru Card -->
           <div class="stat-card stagger-row" id="stat-card-gaps">
             <div class="stat-header">
               <span class="stat-title">Analisis Gap Terbaru</span>
@@ -161,9 +176,9 @@
           </div>
         </div>
 
-        
+        <!-- B. CENTRAL INTERACTIVE PANEL -->
         <div class="middle-grid">
-          
+          <!-- Mulai Penelitian Card -->
           <div class="premium-card stagger-row" id="research-main-card">
             <div class="card-title-container">
               <h2 class="card-title">
@@ -186,7 +201,7 @@
               </button>
             </div>
 
-            
+            <!-- Upload PDF Area -->
             <div class="drag-drop-zone" id="drag-drop-zone">
               <i class="fas fa-cloud-upload-alt upload-icon"></i>
               <div class="upload-title">Tarik & Lepaskan File PDF</div>
@@ -194,7 +209,7 @@
               <input type="file" id="file-input" class="file-input" accept="application/pdf">
             </div>
 
-            
+            <!-- Upload progress visual -->
             <div class="upload-progress-container" id="upload-progress-container">
               <div class="progress-header">
                 <span class="progress-file-name" id="progress-file-name">file_penelitian.pdf</span>
@@ -206,7 +221,7 @@
             </div>
           </div>
 
-          
+          <!-- Histori Terbaru Table -->
           <div class="premium-card stagger-row" id="history-recent-card">
             <div class="card-title-container">
               <h2 class="card-title">
@@ -225,44 +240,14 @@
                   </tr>
                 </thead>
                 <tbody>
-                  
-                  <tr class="stagger-row">
-                    <td class="research-title-cell" title="Optimasi Query Database Terdistribusi">Optimasi Query Database Terdistribusi</td>
-                    <td class="date-cell">02 Jun 2026</td>
-                    <td>
-                      <div class="status-pill-container">
-                        <div class="table-progress-bar"><div class="table-progress-fill" style="width: 100%"></div></div>
-                        <span class="status-label status-complete">Completed</span>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr class="stagger-row">
-                    <td class="research-title-cell" title="Deteksi Kanker Paru dengan Deep Learning">Deteksi Kanker Paru dengan Deep Learning</td>
-                    <td class="date-cell">29 Mei 2026</td>
-                    <td>
-                      <div class="status-pill-container">
-                        <div class="table-progress-bar"><div class="table-progress-fill" style="width: 100%"></div></div>
-                        <span class="status-label status-complete">Completed</span>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr class="stagger-row">
-                    <td class="research-title-cell" title="Sistem Rekomendasi E-Commerce Real-time">Sistem Rekomendasi E-Commerce Real-time</td>
-                    <td class="date-cell">22 Mei 2026</td>
-                    <td>
-                      <div class="status-pill-container">
-                        <div class="table-progress-bar"><div class="table-progress-fill" style="width: 100%"></div></div>
-                        <span class="status-label status-complete">Completed</span>
-                      </div>
-                    </td>
-                  </tr>
+                  <!-- Filled dynamically on boot by retrieveHistory API -->
                 </tbody>
               </table>
             </div>
           </div>
         </div>
 
-        
+        <!-- C. TABEL PERBANDINGAN PAPER (BOTTOM) -->
         <div class="premium-card stagger-row" id="comparison-wide-card">
           <div class="card-title-container">
             <h2 class="card-title">
@@ -282,24 +267,9 @@
                 </tr>
               </thead>
               <tbody>
-                
+                <!-- Populated dynamically based on selected research query -->
                 <tr class="stagger-row">
-                  <td class="year-cell">2023</td>
-                  <td class="method-cell">Two-Phase Commit (2PC)</td>
-                  <td class="gap-cell">Skalabilitas rendah pada latensi jaringan tinggi.</td>
-                  <td class="ai-summary-cell">Penggunaan 2PC standar dalam cloud latency ekstrim memicu bottlenecks yang signifikan.</td>
-                </tr>
-                <tr class="stagger-row">
-                  <td class="year-cell">2024</td>
-                  <td class="method-cell">Raft Consensus Protocol</td>
-                  <td class="gap-cell">Overhead koordinasi pemimpin berlebih saat replika tumbuh.</td>
-                  <td class="ai-summary-cell">Menunjukkan adanya overhead saat konsensus pemimpin harus melintasi region geografis berbeda.</td>
-                </tr>
-                <tr class="stagger-row">
-                  <td class="year-cell">2025</td>
-                  <td class="method-cell">AuraRiset Hybrid Sync</td>
-                  <td class="gap-cell">Belum dievaluasi pada sistem multi-cloud dengan partisi dinamis.</td>
-                  <td class="ai-summary-cell">Kami menemukan peluang penggabungan sinkronisasi hibrid berbasis heuristik untuk toleransi partisi.</td>
+                  <td colspan="4" style="text-align: center; color: var(--color-text-muted);">Masukkan tema penelitian di atas untuk memulai pemetaan gap riset...</td>
                 </tr>
               </tbody>
             </table>
@@ -308,7 +278,7 @@
 
       </div>
 
-      
+      <!-- ==================== VIEW 2: MULAI PENELITIAN VIEW ==================== -->
       <div id="research-view" class="view-section">
         <div class="premium-card section-full-width">
           <div class="card-title-container">
@@ -370,7 +340,7 @@
         </div>
       </div>
 
-      
+      <!-- ==================== VIEW 3: HISTORY VIEW ==================== -->
       <div id="history-view" class="view-section">
         <div class="history-filter-bar">
           <div class="history-filters">
@@ -378,107 +348,54 @@
             <button class="filter-btn">Selesai</button>
             <button class="filter-btn">Draf</button>
           </div>
-          <span style="font-size: 0.85rem; color: var(--color-text-muted);">Menampilkan total 3 riwayat penelitian</span>
+          <span style="font-size: 0.85rem; color: var(--color-text-muted);" id="history-count-text">Menampilkan total 0 riwayat penelitian</span>
         </div>
 
         <div class="history-card-grid">
-          
-          <div class="history-item-card stagger-row">
-            <div class="h-card-left">
-              <div class="h-card-icon"><i class="fas fa-file-invoice"></i></div>
-              <div class="h-card-info">
-                <h3>Optimasi Query Database Terdistribusi</h3>
-                <div class="h-card-meta">
-                  <span><i class="far fa-calendar-alt"></i> 02 Jun 2026</span>
-                  <span><i class="fas fa-cubes"></i> 3 Papers</span>
-                  <span><i class="fas fa-circle" style="color: var(--color-gold); font-size: 0.5rem;"></i> Completed</span>
-                </div>
-              </div>
-            </div>
-            <div class="h-card-actions">
-              <button class="btn-icon" title="Lihat Ulang" onclick="injectNewResults('Optimasi Query Database Terdistribusi'); document.getElementById('nav-btn-dashboard').click();"><i class="fas fa-eye"></i></button>
-              <button class="btn-icon delete" title="Hapus" onclick="this.closest('.history-item-card').remove(); showToast('Dihapus', 'Histori berhasil dihapus.', 'info')"><i class="fas fa-trash-alt"></i></button>
-            </div>
-          </div>
-
-          <div class="history-item-card stagger-row">
-            <div class="h-card-left">
-              <div class="h-card-icon"><i class="fas fa-file-invoice"></i></div>
-              <div class="h-card-info">
-                <h3>Deteksi Kanker Paru dengan Deep Learning</h3>
-                <div class="h-card-meta">
-                  <span><i class="far fa-calendar-alt"></i> 29 Mei 2026</span>
-                  <span><i class="fas fa-cubes"></i> 3 Papers</span>
-                  <span><i class="fas fa-circle" style="color: var(--color-gold); font-size: 0.5rem;"></i> Completed</span>
-                </div>
-              </div>
-            </div>
-            <div class="h-card-actions">
-              <button class="btn-icon" title="Lihat Ulang" onclick="injectNewResults('Deteksi Kanker Paru dengan Deep Learning'); document.getElementById('nav-btn-dashboard').click();"><i class="fas fa-eye"></i></button>
-              <button class="btn-icon delete" title="Hapus" onclick="this.closest('.history-item-card').remove(); showToast('Dihapus', 'Histori berhasil dihapus.', 'info')"><i class="fas fa-trash-alt"></i></button>
-            </div>
-          </div>
-
-          <div class="history-item-card stagger-row">
-            <div class="h-card-left">
-              <div class="h-card-icon"><i class="fas fa-file-invoice"></i></div>
-              <div class="h-card-info">
-                <h3>Sistem Rekomendasi E-Commerce Real-time</h3>
-                <div class="h-card-meta">
-                  <span><i class="far fa-calendar-alt"></i> 22 Mei 2026</span>
-                  <span><i class="fas fa-cubes"></i> 3 Papers</span>
-                  <span><i class="fas fa-circle" style="color: var(--color-gold); font-size: 0.5rem;"></i> Completed</span>
-                </div>
-              </div>
-            </div>
-            <div class="h-card-actions">
-              <button class="btn-icon" title="Lihat Ulang" onclick="injectNewResults('Sistem Rekomendasi E-Commerce Real-time'); document.getElementById('nav-btn-dashboard').click();"><i class="fas fa-eye"></i></button>
-              <button class="btn-icon delete" title="Hapus" onclick="this.closest('.history-item-card').remove(); showToast('Dihapus', 'Histori berhasil dihapus.', 'info')"><i class="fas fa-trash-alt"></i></button>
-            </div>
-          </div>
+          <!-- Loaded dynamically from PostgreSQL DB by api/get_research.php -->
         </div>
       </div>
 
-      
+      <!-- ==================== VIEW 4: SETTINGS VIEW ==================== -->
       <div id="settings-view" class="view-section">
         <div class="settings-grid">
           
-          
+          <!-- Avatar Panel -->
           <div class="settings-profile-card">
             <div class="settings-avatar-container">
-              <div class="settings-avatar-big">P</div>
+              <div class="settings-avatar-big"><?php echo strtoupper(substr($username, 0, 1)); ?></div>
               <button class="btn-avatar-edit" title="Unggah Foto"><i class="fas fa-camera"></i></button>
             </div>
             <div class="settings-profile-info">
-              <h3>Peneliti Utama</h3>
+              <h3><?php echo $username; ?></h3>
               <p>Institusi AuraRiset Global</p>
               <span class="profile-role-badge">Peneliti Utama</span>
             </div>
           </div>
 
-          
+          <!-- Config Form -->
           <div class="premium-card">
             <div class="card-title-container">
               <h2 class="card-title"><i class="fas fa-sliders-h"></i> Informasi Pengguna</h2>
             </div>
-            <form id="settings-profile-form" class="settings-form-card">
+            <form id="settings-profile-form" class="settings-form-card" method="POST" action="api/update_profile.php">
               <div class="input-group">
                 <label class="input-label">Username Peneliti</label>
-                <input type="text" class="form-input" id="set-username" value="Peneliti Utama">
+                <input type="text" class="form-input" id="set-username" name="username" value="<?php echo $username; ?>" required>
               </div>
               
               <div class="input-group">
                 <label class="input-label">Alamat Email</label>
-                <input type="email" class="form-input" id="set-email" value="peneliti@aurariset.ac.id">
+                <input type="email" class="form-input" id="set-email" name="email" value="<?php echo $email; ?>" required>
               </div>
 
               <div class="input-group">
                 <label class="input-label">Institusi</label>
-                <input type="text" class="form-input" value="Universitas Pembangunan Web FP">
+                <input type="text" class="form-input" value="Universitas Pembangunan Web FP" readonly style="opacity: 0.7; cursor: not-allowed;">
               </div>
 
               <div class="form-actions">
-                <button type="button" class="btn-secondary" onclick="showToast('Dibatalkan', 'Perubahan form pengaturan diabaikan.', 'warning')">Reset</button>
+                <button type="button" class="btn-secondary" onclick="window.location.reload();">Reset</button>
                 <button type="submit" class="btn-cta">Simpan Perubahan</button>
               </div>
             </form>
@@ -490,7 +407,7 @@
     </main>
   </div>
 
-  
+  <!-- 3. REAL-TIME AI SCANNING OVERLAY MODAL -->
   <div class="analysis-overlay" id="analysis-overlay">
     <div class="analyzer-card">
       <div class="scanner-container">
@@ -507,12 +424,12 @@
       </div>
 
       <div class="status-log-console" id="console-logs">
-        
+        <!-- Log messages output dynamically -->
       </div>
     </div>
   </div>
 
-  
+  <!-- JavaScript Modules -->
   <script type="module" src="assets/js/app.js"></script>
 </body>
 </html>
