@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraRiset — Automated Research Gap Analysis</title>
+  
+  <meta name="description" content="Temukan kebaruan ilmiah Anda secara instan. Automasi penelusuran ribuan jurnal ilmiah dan petakan research gap tersembunyi dengan dukungan kecerdasan buatan OpenAI.">
+  <meta name="keywords" content="analisis gap, research gap, studi literatur, penulisan paper, openAI, riset otomatis, landing page">
+  <meta name="author" content="AuraRiset Team">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  
+  <div class="aurora-bg">
+    <div class="aurora-orb orb-gold" style="top: 10%; left: 10%; width: 500px; height: 500px;"></div>
+    <div class="aurora-orb orb-navy" style="bottom: 20%; right: 5%; width: 700px; height: 700px;"></div>
+  </div>
+  <canvas id="canvas-particles"></canvas>
+
+  
+  <header class="landing-navbar">
+    <a href="index.html" class="sidebar-logo" style="margin-bottom: 0;">
+      <div class="logo-icon-container">
+        <div class="logo-halo"></div>
+        <i class="fas fa-book-open logo-book"></i>
+      </div>
+      <span>AuraRiset</span>
+    </a>
+
+    <nav class="landing-nav-links">
+      <a href="#overview" class="landing-nav-link">Tentang Kami</a>
+      <a href="#about" class="landing-nav-link">Fitur Layanan</a>
+      <a href="#visual-spectrum" class="landing-nav-link">Spektrum Visual</a>
+      <a href="#faq" class="landing-nav-link">FAQ</a>
+      <a href="#contact" class="landing-nav-link">Hubungi Kami</a>
+      <a href="login.html" class="btn-cta btn-nav-login" style="text-decoration: none;">
+        Login Peneliti
+        <i class="fas fa-sign-in-alt"></i>
+      </a>
+    </nav>
+  </header>
+
+  
+  <section class="landing-hero">
+    <div class="hero-text-container stagger-row">
+      <div class="hero-badge">
+        <i class="fas fa-magic" style="color: var(--color-gold);"></i>
+        AI-Powered Research Accelerator
+      </div>
+      <h1 class="hero-title">Automated Research Gap Analysis</h1>
+      <p class="hero-description">
+        Temukan celah kebaruan (novelty) ilmiah Anda secara instan. AuraRiset secara cerdas mengotomasi penelusuran ribuan jurnal terindeks Scopus, IEEE, dan ACM, kemudian memetakan kontradiksi metodologi serta ruang riset masa depan yang ditenagai oleh integrasi OpenAI.
+      </p>
+      
+      <div class="hero-actions">
+        <a href="login.html" class="btn-cta btn-hero-start" style="text-decoration: none;">
+          Mulai Penelitian Baru
+          <i class="fas fa-rocket"></i>
+        </a>
+        <a href="#about" class="btn-secondary btn-hero-learn" style="text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+          Pelajari Selengkapnya
+          <i class="fas fa-chevron-down"></i>
+        </a>
+      </div>
+    </div>
+
+    
+    <div class="hero-mockup-container stagger-row">
+      <div class="mockup-card">
+        <div class="mockup-header">
+          <div class="mockup-dots"><span></span><span></span><span></span></div>
+          <div class="mockup-title">AuraRiset Scanner Engine</div>
+        </div>
+        <div class="mockup-body">
+          <div class="mockup-stat-card">
+            <span class="m-stat-title">Total Papers Scanned</span>
+            <div class="m-stat-row">
+              <span class="m-stat-num">31,396</span>
+              <span class="m-stat-trend"><i class="fas fa-arrow-trend-up"></i> +12%</span>
+            </div>
+          </div>
+          <div class="mockup-item" style="margin-bottom: 0.5rem;">
+            <div class="m-item-left">
+              <div class="m-item-avatar"><i class="fas fa-brain" style="color: var(--color-gold);"></i></div>
+              <div class="m-item-text">
+                <div class="m-item-title">Query: "Distributed Query Optimization"</div>
+                <div class="m-item-status">Scanning 42 Journals...</div>
+              </div>
+            </div>
+            <span class="m-badge-progress">Progress 80%</span>
+          </div>
+          <div class="mockup-visual-preview" style="border: 1px solid rgba(212, 175, 55, 0.15); border-radius: 12px; overflow: hidden; height: 150px; background: rgba(0,0,0,0.3); position: relative; margin-top: 0.5rem;">
+            <img src="assets/img/research_network.png" alt="AuraRiset Neural Scanning" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.85;">
+            <div style="position: absolute; bottom: 0.5rem; left: 0.5rem; font-size: 0.68rem; font-family: monospace; background: rgba(5,5,8,0.8); padding: 0.25rem 0.55rem; border-radius: 6px; color: var(--color-gold); border: 1px solid rgba(212,175,55,0.25); display: flex; align-items: center; gap: 0.35rem;">
+              <i class="fas fa-circle-notch fa-spin" style="color: var(--color-gold);"></i> Neural-Link Active
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+  
+  <section class="landing-section" id="overview" style="background: rgba(11, 19, 43, 0.15); border-top: 1px solid rgba(212, 175, 55, 0.05); border-bottom: 1px solid rgba(212, 175, 55, 0.05);">
+    <div class="overview-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;">
+      <div class="stagger-row">
+        <h2 class="section-title-landing" style="text-align: left; margin-bottom: 1.5rem;">Mengenal AuraRiset</h2>
+        <p class="card-desc" style="font-size: 1.02rem; line-height: 1.7; margin-bottom: 1.25rem; color: var(--color-text-gray);">
+          Studi literatur merupakan salah satu tahapan paling krusial sekaligus melelahkan dalam dunia akademik. Peneliti seringkali menghabiskan waktu berbulan-bulan hanya untuk membaca ratusan publikasi terdahulu demi merumuskan kontribusi kebaruan ilmiah (novelty).
+        </p>
+        <p class="card-desc" style="font-size: 1.02rem; line-height: 1.7; margin-bottom: 1.5rem; color: var(--color-text-gray);">
+          <strong>AuraRiset</strong> hadir sebagai asisten digital otomatis cerdas yang merevolusi cara studi pustaka dilakukan. Dengan memadukan pemodelan graf keterkaitan kausal dan kecerdasan buatan dari <strong>OpenAI (GPT-4o)</strong>, AuraRiset membantu mengekstrak perbedaan metode, kelemahan sistem, dan celah teoretis (research gaps) yang belum diteliti dari referensi ilmiah secara instan.
+        </p>
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+          <a href="register.html" class="btn-cta" style="text-decoration: none; padding: 0.85rem 1.75rem;">Daftar Akun Gratis</a>
+        </div>
+      </div>
+      
+      
+      <div class="overview-metrics-grid stagger-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div class="premium-card" style="padding: 1.75rem; text-align: center;">
+          <i class="fas fa-history" style="color: var(--color-gold); font-size: 1.75rem; margin-bottom: 0.75rem;"></i>
+          <h4 style="font-size: 1.8rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem;">98%</h4>
+          <span style="font-size: 0.8rem; color: var(--color-text-muted); text-transform: uppercase;">Efisiensi Waktu</span>
+        </div>
+        <div class="premium-card" style="padding: 1.75rem; text-align: center;">
+          <i class="fas fa-database" style="color: var(--color-gold); font-size: 1.75rem; margin-bottom: 0.75rem;"></i>
+          <h4 style="font-size: 1.8rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem;">100+</h4>
+          <span style="font-size: 0.8rem; color: var(--color-text-muted); text-transform: uppercase;">Jurnal Didukung</span>
+        </div>
+        <div class="premium-card" style="padding: 1.75rem; text-align: center;">
+          <i class="fas fa-brain" style="color: var(--color-gold); font-size: 1.75rem; margin-bottom: 0.75rem;"></i>
+          <h4 style="font-size: 1.8rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem;">GPT-4o</h4>
+          <span style="font-size: 0.8rem; color: var(--color-text-muted); text-transform: uppercase;">OpenAI Engine</span>
+        </div>
+        <div class="premium-card" style="padding: 1.75rem; text-align: center;">
+          <i class="fas fa-graduation-cap" style="color: var(--color-gold); font-size: 1.75rem; margin-bottom: 0.75rem;"></i>
+          <h4 style="font-size: 1.8rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem;">10,000+</h4>
+          <span style="font-size: 0.8rem; color: var(--color-text-muted); text-transform: uppercase;">Peneliti Aktif</span>
+        </div>
+      </div>
+    </div>
+  </section>  
+  <section class="landing-section" id="about">
+    <div class="section-header-centered stagger-row">
+      <h2 class="section-title-landing">Layanan Riset Otomatis</h2>
+      <p class="section-subtitle-landing">Fitur canggih yang dirancang khusus untuk mempercepat penulisan draf jurnal ilmiah Anda secara komprehensif</p>
+    </div>
+
+    <div class="features-grid">
+      
+      <div class="premium-card feature-landing-card stagger-row">
+        <div class="feature-icon-wrapper">
+          <i class="fas fa-search-plus"></i>
+        </div>
+        <h3 class="feature-title">Ekstraksi Database Jurnal</h3>
+        <p class="card-desc">Cari dan kumpulkan puluhan paper referensi teratas dari Google Scholar, Scopus, IEEE, dan ACM berdasarkan kata kunci pencarian Anda secara instan dalam hitungan detik.</p>
+      </div>
+
+      
+      <div class="premium-card feature-landing-card stagger-row">
+        <div class="feature-icon-wrapper">
+          <i class="fas fa-crop-alt"></i>
+        </div>
+        <h3 class="feature-title">Pemetaan Celah Kebaruan (Gap)</h3>
+        <p class="card-desc">Algoritma pemrosesan bahasa (NLP) kami membandingkan secara komparatif tahun, metode, kelemahan metodologi, serta asumsi batasan riset terdahulu untuk mencari celah riset kosong.</p>
+      </div>
+
+      
+      <div class="premium-card feature-landing-card stagger-row">
+        <div class="feature-icon-wrapper">
+          <i class="fas fa-network-wired"></i>
+        </div>
+        <h3 class="feature-title">OpenAI Integrated Summary</h3>
+        <p class="card-desc">Dapatkan sintesis ringkasan komparasi ilmiah siap saji yang dirangkum langsung oleh GPT-4o untuk mempermudah penulisan Bab Pendahuluan (Introduction) dan Tinjauan Pustaka Anda.</p>
+      </div>
+
+      
+      <div class="premium-card feature-landing-card stagger-row">
+        <div class="feature-icon-wrapper">
+          <i class="fas fa-file-pdf"></i>
+        </div>
+        <h3 class="feature-title">Smart PDF Uploader</h3>
+        <p class="card-desc">Cukup seret dan lepaskan (drag-and-drop) draf file PDF Anda ke sistem untuk mengekstrak metadata penting, metodologi dasar, batasan, dan saran studi mendatang secara otomatis.</p>
+      </div>
+
+      
+      <div class="premium-card feature-landing-card stagger-row">
+        <div class="feature-icon-wrapper">
+          <i class="fas fa-project-diagram"></i>
+        </div>
+        <h3 class="feature-title">Visualisasi Graf Tren Kausal</h3>
+        <p class="card-desc">Lihat peta hubungan antar paper referensi dalam bentuk grafik interaktif yang menakjubkan untuk memahami pergeseran tren metodologi ilmiah dari tahun ke tahun.</p>
+      </div>
+
+      
+      <div class="premium-card feature-landing-card stagger-row">
+        <div class="feature-icon-wrapper">
+          <i class="fas fa-download"></i>
+        </div>
+        <h3 class="feature-title">Ekspor Repositori Cerdas</h3>
+        <p class="card-desc">Ekspor tabel perbandingan dan hasil analisis Anda ke dalam file Excel, PDF, atau format sitasi akademik standar lainnya seperti RIS dan BibTeX (Mendeley/Zotero).</p>
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="landing-section" id="visual-spectrum" style="border-top: 1px solid var(--border-gold);">
+    <div class="section-header-centered stagger-row">
+      <h2 class="section-title-landing">Visualisasi Hubungan Kausal Pustaka</h2>
+      <p class="section-subtitle-landing">Model AI memetakan kluster paper Scopus/IEEE secara spasial untuk mendeteksi area penelitian kosong yang paling potensial.</p>
+    </div>
+    
+    <div class="spectrum-visual-card stagger-row" style="background: var(--glass-bg); border: 1px solid var(--border-gold); border-radius: 28px; padding: 2.5rem; overflow: hidden; display: grid; grid-template-columns: 1fr 1.2fr; gap: 3rem; align-items: center; box-shadow: var(--shadow-soft);">
+      <div class="spectrum-text-side">
+        <div class="hero-badge" style="margin-bottom: 1rem;"><i class="fas fa-project-diagram"></i> AI Clustering Spectrum</div>
+        <h3 style="font-family: 'Cinzel', serif; font-size: 1.6rem; color: #fff; margin-bottom: 1rem;">Pemetaan Spasial 3D Jurnal Ilmiah</h3>
+        <p style="font-size: 0.95rem; color: var(--color-text-gray); line-height: 1.6; margin-bottom: 1.5rem;">
+          Bukan sekadar daftar pustaka searah. AuraRiset mengekstrak metadata sitasi dan memproyeksikannya ke dalam peta kedekatan semantik. Area dengan kepadatan tinggi menunjukkan topik jenuh (red ocean), sementara area berongga dengan garis koneksi tipis menandai **peluang novelty emas** Anda.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-circle" style="color: var(--color-gold); font-size: 0.7rem;"></i>
+            <span style="font-size: 0.9rem; color: var(--color-text-white);"><strong>Cluster Emas:</strong> Celah Riset Kosong (Novelty Gap)</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-circle" style="color: #4facfe; font-size: 0.7rem;"></i>
+            <span style="font-size: 0.9rem; color: var(--color-text-white);"><strong>Cluster Biru:</strong> Tren Riset Baru Terindeks</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-circle" style="color: #ef4444; font-size: 0.7rem;"></i>
+            <span style="font-size: 0.9rem; color: var(--color-text-white);"><strong>Cluster Merah:</strong> Topik Jenuh (Metodologi Umum)</span>
+          </div>
+        </div>
+      </div>
+      <div class="spectrum-image-side" style="position: relative; border-radius: 18px; overflow: hidden; border: 1px solid rgba(212, 175, 55, 0.25); box-shadow: 0 15px 40px rgba(0,0,0,0.6);">
+        <img src="assets/img/gap_infographic.png" alt="AuraRiset Gap Clustering Infographic" style="width: 100%; display: block; filter: brightness(0.95) contrast(1.05); transition: transform var(--transition-slow);" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="landing-section" id="reviews" style="background: rgba(11, 19, 43, 0.2); border-top: 1px solid var(--border-gold); border-bottom: 1px solid var(--border-gold);">
+    <div class="section-header-centered stagger-row">
+      <h2 class="section-title-landing">Review Pengguna</h2>
+      <p class="section-subtitle-landing">Apa kata para akademisi, dosen, dan peneliti utama tentang efisiensi riset mereka setelah menggunakan AuraRiset</p>
+    </div>
+
+    <div class="reviews-grid">
+      
+      <div class="premium-card review-card stagger-row">
+        <div class="review-stars">
+          <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+        </div>
+        <p class="review-text">
+          "AuraRiset benar-benar menghemat waktu studi literatur saya. Cukup mengunggah draf paper saya, sistem langsung merincikan perbandingan metode kompetitor dan di mana celah kontribusi saya berada secara konkret."
+        </p>
+        <div class="review-user">
+          <div class="review-avatar">BS</div>
+          <div class="review-user-info">
+            <h4>Prof. Dr. Ir. Budi Santoso</h4>
+            <span>Peneliti Utama AI - ITS Surabaya</span>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="premium-card review-card stagger-row">
+        <div class="review-stars">
+          <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+        </div>
+        <p class="review-text">
+          "Penyusunan Bab Tinjauan Pustaka menjadi 10x lebih cepat. Integrasi OpenAI-nya sangat koheren dan memberikan sudut pandang taksonomi riset yang sangat objektif dan membantu validasi novelty naskah."
+        </p>
+        <div class="review-user">
+          <div class="review-avatar">SW</div>
+          <div class="review-user-info">
+            <h4>Dr. Sarah Wijaya, M.T.</h4>
+            <span>Dosen & Peneliti - Univ Indonesia</span>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="premium-card review-card stagger-row">
+        <div class="review-stars">
+          <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+        </div>
+        <p class="review-text">
+          "Sangat terbantu saat menulis proposal thesis S2 saya. Pencarian gap yang sebelumnya memakan waktu berminggu-minggu kini terpetakan dalam hitungan detik saja dengan visualisasi data yang menakjubkan!"
+        </p>
+        <div class="review-user">
+          <div class="review-avatar">FR</div>
+          <div class="review-user-info">
+            <h4>Fahmi Ramadhan</h4>
+            <span>Mahasiswa S2 Ilmu Komputer - ITB</span>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="premium-card review-card stagger-row">
+        <div class="review-stars">
+          <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+        </div>
+        <p class="review-text">
+          "Excellent SOTA scanning tool. The integration with GPT-4o synthesizes unstructured limitations sections of IEEE/ACM journals into clear, actionable comparative metrics for my PhD dissertation."
+        </p>
+        <div class="review-user">
+          <div class="review-avatar">AC</div>
+          <div class="review-user-info">
+            <h4>Amara Carter, PhD</h4>
+            <span>Research Fellow - Tokyo Tech</span>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="premium-card review-card stagger-row">
+        <div class="review-stars">
+          <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+        </div>
+        <p class="review-text">
+          "Sangat membantu membimbing mahasiswa skripsi saya dalam mencari topik riset yang segar dan minim duplikasi. Alat komparasi otomatisnya menyajikan data yang komparatif dan kredibel."
+        </p>
+        <div class="review-user">
+          <div class="review-avatar">NA</div>
+          <div class="review-user-info">
+            <h4>Naufal Alfarisi, M.Kom.</h4>
+            <span>Dosen & Peneliti Muda - Univ Airlangga</span>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="premium-card review-card stagger-row">
+        <div class="review-stars">
+          <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+        </div>
+        <p class="review-text">
+          "Sebagai peneliti muda di LIPI/BRIN, memetakan ratusan paper secara cepat adalah keharusan. AuraRiset adalah asisten riset virtual terbaik yang pernah saya gunakan sepanjang karir akademik saya."
+        </p>
+        <div class="review-user">
+          <div class="review-avatar">RD</div>
+          <div class="review-user-info">
+            <h4>Rian Dewantara</h4>
+            <span>Researcher - BRIN Indonesia</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="landing-section" id="faq" style="background: rgba(11, 19, 43, 0.15); border-top: 1px solid var(--border-gold); border-bottom: 1px solid var(--border-gold);">
+    <div class="section-header-centered stagger-row">
+      <h2 class="section-title-landing">Frequently Asked Questions</h2>
+      <p class="section-subtitle-landing">Temukan jawaban cepat seputar cara kerja kecerdasan buatan AuraRiset dalam memetakan kesenjangan ilmiah Anda.</p>
+    </div>
+
+    <div class="faq-container stagger-row">
+      
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>Apa itu AuraRiset dan bagaimana ia membantu penelitian saya?</span>
+          <i class="fas fa-chevron-down faq-chevron"></i>
+        </button>
+        <div class="faq-answer-wrapper">
+          <div class="faq-answer">
+            AuraRiset adalah platform otomatisasi riset berbasis kecerdasan buatan (AI) yang memetakan literatur ilmiah dari ribuan database jurnal ternama (Scopus, IEEE, ACM) untuk mendeteksi kesenjangan riset (research gap) dan merumuskan celah kebaruan (novelty) secara instan untuk mempercepat penulisan draf naskah Anda.
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>Bagaimana OpenAI GPT-4o bekerja di dalam sistem ini?</span>
+          <i class="fas fa-chevron-down faq-chevron"></i>
+        </button>
+        <div class="faq-answer-wrapper">
+          <div class="faq-answer">
+            AuraRiset mengekstrak teks penting, metodologi, dan batasan naskah ilmiah dari database jurnal atau file PDF yang Anda unggah, lalu memprosesnya secara cerdas menggunakan model bahasa GPT-4o untuk menghasilkan visualisasi komparatif dan sintesis ringkasan ilmiah yang koheren dan siap saji.
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>Apakah draf dokumen PDF yang saya unggah aman di sistem?</span>
+          <i class="fas fa-chevron-down faq-chevron"></i>
+        </button>
+        <div class="faq-answer-wrapper">
+          <div class="faq-answer">
+            Sangat aman. Seluruh dokumen PDF yang Anda unggah dienkripsi secara penuh dan hanya diproses di sisi server terisolasi untuk sesi analisis Anda. Kami menjamin tidak ada data naskah riset Anda yang disimpan secara permanen atau digunakan sebagai data pelatihan (training data) oleh model AI publik.
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>Bagaimana cara mengekspor hasil analisis gap untuk kebutuhan sitasi?</span>
+          <i class="fas fa-chevron-down faq-chevron"></i>
+        </button>
+        <div class="faq-answer-wrapper">
+          <div class="faq-answer">
+            Hasil tabel perbandingan dan ringkasan gap dari dashboard dapat Anda ekspor langsung ke berbagai format sitasi akademik standar seperti RIS (untuk Mendeley atau Zotero), BibTeX (untuk LaTeX), file PDF laporan ringkas, atau format tabel Excel spreadsheet.
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>Berapa batas ukuran dokumen PDF yang didukung oleh sistem uploader?</span>
+          <i class="fas fa-chevron-down faq-chevron"></i>
+        </button>
+        <div class="faq-answer-wrapper">
+          <div class="faq-answer">
+            Smart PDF Uploader kami mendukung ukuran file naskah PDF akademis standar hingga maksimum 10 MB per file, yang sudah sangat mencukupi untuk memproses paper riset yang panjang beserta lampiran gambar grafisnya.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="landing-section" id="contact">
+    <div class="section-header-centered stagger-row">
+      <h2 class="section-title-landing">Contact Us</h2>
+      <p class="section-subtitle-landing">Ada pertanyaan, butuh bantuan integrasi institusi, atau ingin bekerja sama? Hubungi tim pendukung peneliti kami</p>
+    </div>
+
+    <div class="contact-container-landing stagger-row">
+      
+      <div class="premium-card contact-info-card-left" style="padding: 2.5rem; text-align: left; display: flex; flex-direction: column; gap: 1.5rem;">
+        <h3 style="font-family: 'Cinzel', serif; font-size: 1.25rem; color: var(--color-gold); font-weight: 700; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(212,175,55,0.15); padding-bottom: 0.75rem;"><i class="fas fa-info-circle" style="margin-right: 0.5rem;"></i> Informasi Kontak</h3>
+        
+        <div style="display: flex; gap: 1rem; align-items: flex-start;">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(212,175,55,0.08); display: flex; align-items: center; justify-content: center; color: var(--color-gold); font-size: 1.1rem; flex-shrink: 0;"><i class="fas fa-map-marker-alt"></i></div>
+          <div>
+            <h4 style="font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 0.2rem;">Lokasi Kantor</h4>
+            <p style="font-size: 0.85rem; color: var(--color-text-gray); line-height: 1.4;">Gedung Riset dan Inovasi lt. 4, Kampus Sukolilo, Surabaya, Jawa Timur, Indonesia</p>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; align-items: flex-start;">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(212,175,55,0.08); display: flex; align-items: center; justify-content: center; color: var(--color-gold); font-size: 1.1rem; flex-shrink: 0;"><i class="fas fa-envelope"></i></div>
+          <div>
+            <h4 style="font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 0.2rem;">Email Resmi</h4>
+            <p style="font-size: 0.85rem; color: var(--color-text-gray);"><a href="mailto:support@aurariset.ac.id" style="color: var(--color-text-gray); text-decoration: none; transition: var(--transition-fast);" onmouseover="this.style.color='var(--color-gold)'" onmouseout="this.style.color='var(--color-text-gray)'">support@aurariset.ac.id</a></p>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; align-items: flex-start;">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(212,175,55,0.08); display: flex; align-items: center; justify-content: center; color: var(--color-gold); font-size: 1.1rem; flex-shrink: 0;"><i class="fas fa-phone-alt"></i></div>
+          <div>
+            <h4 style="font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 0.2rem;">Telepon Hubungan</h4>
+            <p style="font-size: 0.85rem; color: var(--color-text-gray);">+62 (31) 599-7890 / +62 812-3456-7890</p>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; align-items: flex-start;">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(212,175,55,0.08); display: flex; align-items: center; justify-content: center; color: var(--color-gold); font-size: 1.1rem; flex-shrink: 0;"><i class="fas fa-clock"></i></div>
+          <div>
+            <h4 style="font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 0.2rem;">Jam Operasional</h4>
+            <p style="font-size: 0.85rem; color: var(--color-text-gray);">Senin - Jumat, 08:00 - 17:00 WIB</p>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="premium-card contact-form-card">
+        <form id="landing-contact-form" onsubmit="handleContactSubmit(event)">
+          <div class="contact-form-grid">
+            <div class="input-group">
+              <label class="input-label">Nama Lengkap</label>
+              <input type="text" class="form-input" id="contact-name" placeholder="Masukkan nama Anda..." required>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Alamat Email</label>
+              <input type="email" class="form-input" id="contact-email" placeholder="Masukkan email aktif..." required>
+            </div>
+          </div>
+          <div class="input-group" style="margin-top: 1.25rem;">
+            <label class="input-label">Subjek Pesan</label>
+            <input type="text" class="form-input" id="contact-subject" placeholder="Misal: Kemitraan Kampus, Pertanyaan API..." required>
+          </div>
+          <div class="input-group" style="margin-top: 1.25rem;">
+            <label class="input-label">Isi Pesan Anda</label>
+            <textarea class="form-input" id="contact-message" rows="5" placeholder="Tuliskan pesan Anda secara mendetail di sini..." style="resize: none;" required></textarea>
+          </div>
+          <div style="margin-top: 1.5rem; text-align: right;">
+            <button type="submit" class="btn-cta btn-contact-submit">
+              Kirim Pesan Dukungan
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  
+  <footer class="landing-footer">
+    <div class="footer-top">
+      <div class="footer-branding">
+        <a href="index.html" class="sidebar-logo" style="margin-bottom: 1rem;">
+          <div class="logo-icon-container">
+            <div class="logo-halo"></div>
+            <i class="fas fa-book-open logo-book"></i>
+          </div>
+          <span>AuraRiset</span>
+        </a>
+        <p>Solusi cerdas automasi studi literatur dan pencarian kesenjangan penelitian demi mempercepat luaran ilmiah berkualitas tinggi.</p>
+      </div>
+      <div class="footer-links-group">
+        <h4>Menu Utama</h4>
+        <a href="index.html">Beranda</a>
+        <a href="#about">Tentang Kami</a>
+        <a href="#reviews">Review Pengguna</a>
+        <a href="#contact">Contact Us</a>
+      </div>
+      <div class="footer-links-group">
+        <h4>Sistem Aplikasi</h4>
+        <a href="login.html">Login Peneliti</a>
+        <a href="register.html">Daftar Akun</a>
+        <a href="dashboard.html">Dashboard Aplikasi</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 AuraRiset. Hak Cipta Dilindungi Undang-Undang. Universitas Pembangunan Web FP.</p>
+      <div class="footer-socials">
+        <a href="#"><i class="fab fa-github"></i></a>
+        <a href="#"><i class="fab fa-linkedin"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  
+  <!-- JavaScript Modules -->
+  <script type="module" src="assets/js/app.js"></script>
+  <script>
+    function handleContactSubmit(event) {
+      event.preventDefault();
+      const name = document.getElementById('contact-name').value.trim();
+      const email = document.getElementById('contact-email').value.trim();
+      const subject = document.getElementById('contact-subject').value.trim();
+      const msg = document.getElementById('contact-message').value.trim();
+
+      if (!name || !email || !subject || !msg) {
+        showToast('Error', 'Harap isi semua kolom contact form!', 'error');
+        return;
+      }
+
+      
+      showToast('Pesan Terkirim', `Terima kasih ${name}, pesan Anda tentang "${subject}" berhasil diterima tim pendukung AuraRiset!`, 'success');
+      document.getElementById('landing-contact-form').reset();
+    }
+  </script>
+</body>
+</html>

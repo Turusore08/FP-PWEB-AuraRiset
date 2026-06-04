@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraRiset — Registrasi Peneliti Baru</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  
+  <div class="aurora-bg">
+    <div class="aurora-orb orb-gold"></div>
+    <div class="aurora-orb orb-navy"></div>
+  </div>
+  <canvas id="canvas-particles"></canvas>
+
+  <div class="auth-container">
+    <div class="auth-card">
+      <a href="index.html" class="auth-logo">
+        <div class="logo-icon-container">
+          <div class="logo-halo"></div>
+          <i class="fas fa-book-open logo-book"></i>
+        </div>
+        <span>AuraRiset</span>
+      </a>
+
+      <h2 class="auth-title">Daftar Akun Baru</h2>
+      <p class="auth-subtitle">Gabung bersama ribuan peneliti global untuk mempercepat studi literatur</p>
+
+      <form id="register-form" class="auth-form" onsubmit="handleRegisterSubmit(event)">
+        
+        
+        <div class="form-group-relative">
+          <input type="text" class="auth-input" placeholder="Username" id="reg-username" required oninput="validateUsername()">
+          <i class="fas fa-user input-icon"></i>
+          <div class="validation-hint" id="username-hint">Username harus unik tanpa spasi</div>
+        </div>
+
+        
+        <div class="form-group-relative">
+          <input type="email" class="auth-input" placeholder="Alamat Email" id="reg-email" required oninput="validateEmail()">
+          <i class="fas fa-envelope input-icon"></i>
+          <div class="validation-hint" id="email-hint">Gunakan email aktif institusi atau pribadi</div>
+        </div>
+
+        
+        <div class="form-group-relative">
+          <input type="password" class="auth-input" placeholder="Kata Sandi Baru" id="reg-password" required oninput="validatePassword()">
+          <i class="fas fa-lock input-icon"></i>
+          <i class="far fa-eye toggle-password" id="toggle-pwd-icon" onclick="togglePasswordVisibility('reg-password', 'toggle-pwd-icon')"></i>
+          <div class="validation-hint" id="pwd-hint">Minimal 8 karakter, kombinasi huruf & angka</div>
+        </div>
+
+        
+        <div class="form-group-relative">
+          <input type="password" class="auth-input" placeholder="Konfirmasi Kata Sandi" id="reg-confirm" required oninput="validateConfirmPassword()">
+          <i class="fas fa-shield-alt input-icon"></i>
+          <i class="far fa-eye toggle-password" id="toggle-confirm-icon" onclick="togglePasswordVisibility('reg-confirm', 'toggle-confirm-icon')"></i>
+          <div class="validation-hint" id="confirm-hint">Ulangi kata sandi di atas dengan persis</div>
+        </div>
+
+        <button type="submit" class="btn-cta" style="width: 100%; justify-content: center; padding: 1rem; margin-top: 0.75rem;">
+          Daftarkan Akun
+          <i class="fas fa-user-plus"></i>
+        </button>
+      </form>
+
+      <p class="auth-footer-text">
+        Sudah memiliki akun? <a href="login.html">Masuk di sini</a>
+      </p>
+    </div>
+  </div>
+
+  <script type="module" src="assets/js/app.js"></script>
+  <script>
+    
+    let isUserValid = false;
+    let isEmailValid = false;
+    let isPwdValid = false;
+    let isConfirmValid = false;
+
+    function togglePasswordVisibility(inputId, iconId) {
+      const pwdInput = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        icon.className = 'far fa-eye-slash toggle-password';
+      } else {
+        pwdInput.type = 'password';
+        icon.className = 'far fa-eye toggle-password';
+      }
+    }
+
+    function validateUsername() {
+      const input = document.getElementById('reg-username');
+      const hint = document.getElementById('username-hint');
+      const val = input.value.trim();
+
+      if (val.length < 3) {
+        input.className = "auth-input is-invalid";
+        hint.textContent = "Username terlalu pendek (minimal 3 karakter).";
+        hint.className = "validation-hint invalid";
+        isUserValid = false;
+      } else if (/\s/.test(val)) {
+        input.className = "auth-input is-invalid";
+        hint.textContent = "Username tidak boleh mengandung spasi.";
+        hint.className = "validation-hint invalid";
+        isUserValid = false;
+      } else {
+        input.className = "auth-input is-valid";
+        hint.textContent = "Username valid dan dapat digunakan.";
+        hint.className = "validation-hint valid";
+        isUserValid = true;
+      }
+    }
+
+    function validateEmail() {
+      const input = document.getElementById('reg-email');
+      const hint = document.getElementById('email-hint');
+      const val = input.value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!emailRegex.test(val)) {
+        input.className = "auth-input is-invalid";
+        hint.textContent = "Format alamat email tidak valid.";
+        hint.className = "validation-hint invalid";
+        isEmailValid = false;
+      } else {
+        input.className = "auth-input is-valid";
+        hint.textContent = "Email valid.";
+        hint.className = "validation-hint valid";
+        isEmailValid = true;
+      }
+    }
+
+    function validatePassword() {
+      const input = document.getElementById('reg-password');
+      const hint = document.getElementById('pwd-hint');
+      const val = input.value;
+
+      const hasLetter = /[a-zA-Z]/.test(val);
+      const hasNumber = /[0-9]/.test(val);
+
+      if (val.length < 8) {
+        input.className = "auth-input is-invalid";
+        hint.textContent = "Sandi terlalu pendek (minimal 8 karakter).";
+        hint.className = "validation-hint invalid";
+        isPwdValid = false;
+      } else if (!hasLetter || !hasNumber) {
+        input.className = "auth-input is-invalid";
+        hint.textContent = "Sandi harus mengombinasikan huruf dan angka.";
+        hint.className = "validation-hint invalid";
+        isPwdValid = false;
+      } else {
+        input.className = "auth-input is-valid";
+        hint.textContent = "Kata sandi kuat.";
+        hint.className = "validation-hint valid";
+        isPwdValid = true;
+      }
+      
+      
+      validateConfirmPassword();
+    }
+
+    function validateConfirmPassword() {
+      const input = document.getElementById('reg-confirm');
+      const pwd = document.getElementById('reg-password').value;
+      const hint = document.getElementById('confirm-hint');
+      const val = input.value;
+
+      if (val === '') {
+        input.className = "auth-input";
+        hint.textContent = "Ulangi kata sandi di atas dengan persis";
+        hint.className = "validation-hint";
+        isConfirmValid = false;
+      } else if (val !== pwd) {
+        input.className = "auth-input is-invalid";
+        hint.textContent = "Konfirmasi kata sandi tidak cocok.";
+        hint.className = "validation-hint invalid";
+        isConfirmValid = false;
+      } else {
+        input.className = "auth-input is-valid";
+        hint.textContent = "Kata sandi cocok.";
+        hint.className = "validation-hint valid";
+        isConfirmValid = true;
+      }
+    }
+
+    function handleRegisterSubmit(event) {
+      event.preventDefault();
+
+      
+      validateUsername();
+      validateEmail();
+      validatePassword();
+      validateConfirmPassword();
+
+      if (!isUserValid || !isEmailValid || !isPwdValid || !isConfirmValid) {
+        showToast('Error', 'Harap periksa form validasi Anda terlebih dahulu!', 'error');
+        return;
+      }
+
+      const user = document.getElementById('reg-username').value.trim();
+
+      
+      showToast('Registrasi Berhasil', `Akun peneliti "${user}" berhasil didaftarkan!`, 'success');
+      
+      
+      localStorage.setItem('aurariset_username', user);
+
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 1500);
+    }
+  </script>
+</body>
+</html>

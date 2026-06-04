@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraRiset — Automated Research Gap Analysis Dashboard</title>
+  
+  <meta name="description" content="Dashboard cerdas AuraRiset mempermudah analisis kesenjangan (research gap) secara otomatis menggunakan pemodelan bahasa canggih terintegrasi OpenAI.">
+  <meta name="keywords" content="analisis gap, research gap, studi literatur, penulisan paper, openAI, riset otomatis">
+  <meta name="author" content="AuraRiset Team">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  
+  <div class="aurora-bg">
+    <div class="aurora-orb orb-gold"></div>
+    <div class="aurora-orb orb-navy"></div>
+  </div>
+  <canvas id="canvas-particles"></canvas>
+
+  <div class="app-container">
+
+    
+    <aside class="sidebar">
+      <a href="index.html" class="sidebar-logo" id="logo-branding">
+        <div class="logo-icon-container">
+          <div class="logo-halo"></div>
+          <i class="fas fa-book-open logo-book"></i>
+        </div>
+        <span>AuraRiset</span>
+      </a>
+
+      <nav class="sidebar-menu">
+        <li class="sidebar-menu-item">
+          <button class="sidebar-menu-btn active" data-view="dashboard" id="nav-btn-dashboard">
+            <i class="fas fa-chart-pie"></i>
+            Dashboard
+          </button>
+        </li>
+        <li class="sidebar-menu-item">
+          <button class="sidebar-menu-btn" data-view="research" id="nav-btn-research">
+            <i class="fas fa-vial"></i>
+            Mulai Penelitian
+          </button>
+        </li>
+        <li class="sidebar-menu-item">
+          <button class="sidebar-menu-btn" data-view="history" id="nav-btn-history">
+            <i class="fas fa-history"></i>
+            Histori
+          </button>
+        </li>
+        <li class="sidebar-menu-item">
+          <button class="sidebar-menu-btn" data-view="settings" id="nav-btn-settings">
+            <i class="fas fa-user-cog"></i>
+            Pengaturan Akun
+          </button>
+        </li>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="sidebar-menu-btn" data-view="logout" id="nav-btn-logout">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </div>
+    </aside>
+
+    
+    <main class="main-content">
+
+      
+      <header class="main-header">
+        <div class="header-title-area">
+          <h1 id="view-title">Dashboard</h1>
+          <p id="view-subtitle">Kelola studi literatur dan temukan celah riset Anda secara instan</p>
+        </div>
+
+        <div class="header-controls">
+          <div class="search-bar-container">
+            <i class="fas fa-search"></i>
+            <input type="text" class="search-input" placeholder="Cari analisis atau paper..." id="search-dashboard-table">
+          </div>
+
+          
+          <div class="profile-dropdown" id="profile-dropdown">
+            <div class="profile-trigger" id="profile-trigger">
+              <div class="profile-avatar">P</div>
+              <span class="profile-name">Peneliti Utama</span>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+              <div class="dropdown-header">
+                <div class="dropdown-header-name">Peneliti Utama</div>
+                <div class="dropdown-header-email">peneliti@aurariset.ac.id</div>
+              </div>
+              <a href="#" class="dropdown-link" onclick="document.getElementById('nav-btn-settings').click(); return false;">
+                <i class="fas fa-user-circle"></i> Profil Saya
+              </a>
+              <a href="#" class="dropdown-link" onclick="document.getElementById('nav-btn-settings').click(); return false;">
+                <i class="fas fa-cog"></i> Pengaturan
+              </a>
+              <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 0.5rem 0;">
+              <a href="#" class="dropdown-link" onclick="document.getElementById('nav-btn-logout').click(); return false;" style="color: #ef4444;">
+                <i class="fas fa-sign-out-alt"></i> Logout
+              </a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      
+      <div id="dashboard-view" class="view-section active">
+
+        
+        <div class="stats-container">
+          
+          <div class="stat-card stagger-row" id="stat-card-total">
+            <div class="stat-header">
+              <span class="stat-title">Total Penelitian</span>
+              <div class="stat-icon"><i class="fas fa-archive"></i></div>
+            </div>
+            <div class="stat-value" id="count-total">0</div>
+            <div class="stat-chart-container">
+              <svg class="sparkline-svg" viewBox="0 0 100 30">
+                <path class="sparkline-glow" d="M0,25 Q15,10 30,22 T60,5 T90,20 T100,8" />
+                <path class="sparkline-path" d="M0,25 Q15,10 30,22 T60,5 T90,20 T100,8" />
+              </svg>
+            </div>
+          </div>
+
+          
+          <div class="stat-card stagger-row" id="stat-card-papers">
+            <div class="stat-header">
+              <span class="stat-title">Paper Dianalisis</span>
+              <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+            </div>
+            <div class="stat-value" id="count-paper">0</div>
+            
+            <div class="paper-stack-visual">
+              <div class="paper-layer"></div>
+              <div class="paper-layer"></div>
+              <div class="paper-layer"></div>
+            </div>
+          </div>
+
+          
+          <div class="stat-card stagger-row" id="stat-card-gaps">
+            <div class="stat-header">
+              <span class="stat-title">Analisis Gap Terbaru</span>
+              <div class="stat-icon"><i class="fas fa-vector-square"></i></div>
+            </div>
+            <div class="stat-value" id="count-gap">0</div>
+            <div class="stat-chart-container">
+              <svg class="sparkline-svg" viewBox="0 0 100 30">
+                <path class="sparkline-path sparkline-path-blue" d="M0,28 L15,22 L35,15 L50,18 L65,10 L85,8 L100,2" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="middle-grid">
+          
+          <div class="premium-card stagger-row" id="research-main-card">
+            <div class="card-title-container">
+              <h2 class="card-title">
+                <i class="fas fa-compass"></i>
+                Mulai Penelitian Baru
+              </h2>
+            </div>
+            <p class="card-desc">
+              Masukkan topik riset spesifik Anda untuk mengekstrak bibliografi, atau unggah draf paper PDF Anda untuk menemukan celah kebaruan (research gap) secara otomatis.
+            </p>
+            
+            <div class="search-action-container">
+              <div class="topic-input-wrapper">
+                <i class="fas fa-search-plus"></i>
+                <input type="text" class="topic-input" placeholder="Masukkan topik atau unggah PDF di bawah..." id="topic-input">
+              </div>
+              <button class="btn-cta" id="btn-start-analysis">
+                Mulai Analisis
+                <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
+
+            
+            <div class="drag-drop-zone" id="drag-drop-zone">
+              <i class="fas fa-cloud-upload-alt upload-icon"></i>
+              <div class="upload-title">Tarik & Lepaskan File PDF</div>
+              <div class="upload-subtitle">atau klik untuk menelusuri folder komputer (Maksimal 10 MB)</div>
+              <input type="file" id="file-input" class="file-input" accept="application/pdf">
+            </div>
+
+            
+            <div class="upload-progress-container" id="upload-progress-container">
+              <div class="progress-header">
+                <span class="progress-file-name" id="progress-file-name">file_penelitian.pdf</span>
+                <span class="progress-percent" id="progress-percent">0%</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progress-bar-fill"></div>
+              </div>
+            </div>
+          </div>
+
+          
+          <div class="premium-card stagger-row" id="history-recent-card">
+            <div class="card-title-container">
+              <h2 class="card-title">
+                <i class="fas fa-history"></i>
+                Histori Terbaru
+              </h2>
+            </div>
+            
+            <div class="table-container">
+              <table class="recent-table">
+                <thead>
+                  <tr>
+                    <th>Judul Riset</th>
+                    <th>Tanggal</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  
+                  <tr class="stagger-row">
+                    <td class="research-title-cell" title="Optimasi Query Database Terdistribusi">Optimasi Query Database Terdistribusi</td>
+                    <td class="date-cell">02 Jun 2026</td>
+                    <td>
+                      <div class="status-pill-container">
+                        <div class="table-progress-bar"><div class="table-progress-fill" style="width: 100%"></div></div>
+                        <span class="status-label status-complete">Completed</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="stagger-row">
+                    <td class="research-title-cell" title="Deteksi Kanker Paru dengan Deep Learning">Deteksi Kanker Paru dengan Deep Learning</td>
+                    <td class="date-cell">29 Mei 2026</td>
+                    <td>
+                      <div class="status-pill-container">
+                        <div class="table-progress-bar"><div class="table-progress-fill" style="width: 100%"></div></div>
+                        <span class="status-label status-complete">Completed</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="stagger-row">
+                    <td class="research-title-cell" title="Sistem Rekomendasi E-Commerce Real-time">Sistem Rekomendasi E-Commerce Real-time</td>
+                    <td class="date-cell">22 Mei 2026</td>
+                    <td>
+                      <div class="status-pill-container">
+                        <div class="table-progress-bar"><div class="table-progress-fill" style="width: 100%"></div></div>
+                        <span class="status-label status-complete">Completed</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="premium-card stagger-row" id="comparison-wide-card">
+          <div class="card-title-container">
+            <h2 class="card-title">
+              <i class="fas fa-columns"></i>
+              Tabel Perbandingan Paper
+            </h2>
+          </div>
+          
+          <div class="bottom-table-container">
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th>Tahun</th>
+                  <th>Metode</th>
+                  <th>Gap Ditemukan</th>
+                  <th>OpenAI Integrated Summary</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                <tr class="stagger-row">
+                  <td class="year-cell">2023</td>
+                  <td class="method-cell">Two-Phase Commit (2PC)</td>
+                  <td class="gap-cell">Skalabilitas rendah pada latensi jaringan tinggi.</td>
+                  <td class="ai-summary-cell">Penggunaan 2PC standar dalam cloud latency ekstrim memicu bottlenecks yang signifikan.</td>
+                </tr>
+                <tr class="stagger-row">
+                  <td class="year-cell">2024</td>
+                  <td class="method-cell">Raft Consensus Protocol</td>
+                  <td class="gap-cell">Overhead koordinasi pemimpin berlebih saat replika tumbuh.</td>
+                  <td class="ai-summary-cell">Menunjukkan adanya overhead saat konsensus pemimpin harus melintasi region geografis berbeda.</td>
+                </tr>
+                <tr class="stagger-row">
+                  <td class="year-cell">2025</td>
+                  <td class="method-cell">AuraRiset Hybrid Sync</td>
+                  <td class="gap-cell">Belum dievaluasi pada sistem multi-cloud dengan partisi dinamis.</td>
+                  <td class="ai-summary-cell">Kami menemukan peluang penggabungan sinkronisasi hibrid berbasis heuristik untuk toleransi partisi.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      
+      <div id="research-view" class="view-section">
+        <div class="premium-card section-full-width">
+          <div class="card-title-container">
+            <h2 class="card-title"><i class="fas fa-paper-plane"></i> Form Parameter Analisis Riset</h2>
+          </div>
+          <p class="card-desc">Konfigurasikan kedalaman studi pustaka dan batasan paper yang akan diproses oleh AI.</p>
+
+          <form id="detailed-research-form" onsubmit="event.preventDefault(); document.getElementById('btn-start-analysis').click();">
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+              <div class="input-group">
+                <label class="input-label">Tema Utama / Judul Penelitian</label>
+                <input type="text" class="form-input" placeholder="Masukkan hipotesis atau tema penelitian..." required id="form-topic-input" oninput="document.getElementById('topic-input').value = this.value">
+              </div>
+
+              <div class="config-container">
+                <div class="input-group">
+                  <label class="input-label">Metode Pencarian</label>
+                  <select class="select-custom">
+                    <option value="sota">State of the Art (SOTA) Gap Analysis</option>
+                    <option value="methodology">Methodological Flaws & Scope</option>
+                    <option value="chronological">Chronological Literature Mapping</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <label class="input-label">Jumlah Paper yang Dianalisis</label>
+                  <select class="select-custom">
+                    <option value="5">5 Paper Teratas</option>
+                    <option value="10">10 Paper Teratas</option>
+                    <option value="20">20 Paper Teratas (Deep Scan)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="config-container">
+                <div class="input-group">
+                  <label class="input-label">Rentang Tahun Publikasi</label>
+                  <select class="select-custom">
+                    <option value="3">3 Tahun Terakhir (2023 - 2026)</option>
+                    <option value="5">5 Tahun Terakhir (2021 - 2026)</option>
+                    <option value="10">10 Tahun Terakhir (2016 - 2026)</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <label class="input-label">Integrasi Mesin AI</label>
+                  <select class="select-custom">
+                    <option value="gpt-4o">OpenAI GPT-4o (Synthesizer Cerdas)</option>
+                    <option value="claude-3-5">Claude 3.5 Sonnet (Kontekstual Pustaka)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="margin-top: 1rem;">
+                <button type="submit" class="btn-cta" style="width: 100%; justify-content: center; padding: 1.1rem;">
+                  <i class="fas fa-microscope"></i> Jalankan Ekstraksi AI & Framework Gap
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      
+      <div id="history-view" class="view-section">
+        <div class="history-filter-bar">
+          <div class="history-filters">
+            <button class="filter-btn active">Semua Analisis</button>
+            <button class="filter-btn">Selesai</button>
+            <button class="filter-btn">Draf</button>
+          </div>
+          <span style="font-size: 0.85rem; color: var(--color-text-muted);">Menampilkan total 3 riwayat penelitian</span>
+        </div>
+
+        <div class="history-card-grid">
+          
+          <div class="history-item-card stagger-row">
+            <div class="h-card-left">
+              <div class="h-card-icon"><i class="fas fa-file-invoice"></i></div>
+              <div class="h-card-info">
+                <h3>Optimasi Query Database Terdistribusi</h3>
+                <div class="h-card-meta">
+                  <span><i class="far fa-calendar-alt"></i> 02 Jun 2026</span>
+                  <span><i class="fas fa-cubes"></i> 3 Papers</span>
+                  <span><i class="fas fa-circle" style="color: var(--color-gold); font-size: 0.5rem;"></i> Completed</span>
+                </div>
+              </div>
+            </div>
+            <div class="h-card-actions">
+              <button class="btn-icon" title="Lihat Ulang" onclick="injectNewResults('Optimasi Query Database Terdistribusi'); document.getElementById('nav-btn-dashboard').click();"><i class="fas fa-eye"></i></button>
+              <button class="btn-icon delete" title="Hapus" onclick="this.closest('.history-item-card').remove(); showToast('Dihapus', 'Histori berhasil dihapus.', 'info')"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          </div>
+
+          <div class="history-item-card stagger-row">
+            <div class="h-card-left">
+              <div class="h-card-icon"><i class="fas fa-file-invoice"></i></div>
+              <div class="h-card-info">
+                <h3>Deteksi Kanker Paru dengan Deep Learning</h3>
+                <div class="h-card-meta">
+                  <span><i class="far fa-calendar-alt"></i> 29 Mei 2026</span>
+                  <span><i class="fas fa-cubes"></i> 3 Papers</span>
+                  <span><i class="fas fa-circle" style="color: var(--color-gold); font-size: 0.5rem;"></i> Completed</span>
+                </div>
+              </div>
+            </div>
+            <div class="h-card-actions">
+              <button class="btn-icon" title="Lihat Ulang" onclick="injectNewResults('Deteksi Kanker Paru dengan Deep Learning'); document.getElementById('nav-btn-dashboard').click();"><i class="fas fa-eye"></i></button>
+              <button class="btn-icon delete" title="Hapus" onclick="this.closest('.history-item-card').remove(); showToast('Dihapus', 'Histori berhasil dihapus.', 'info')"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          </div>
+
+          <div class="history-item-card stagger-row">
+            <div class="h-card-left">
+              <div class="h-card-icon"><i class="fas fa-file-invoice"></i></div>
+              <div class="h-card-info">
+                <h3>Sistem Rekomendasi E-Commerce Real-time</h3>
+                <div class="h-card-meta">
+                  <span><i class="far fa-calendar-alt"></i> 22 Mei 2026</span>
+                  <span><i class="fas fa-cubes"></i> 3 Papers</span>
+                  <span><i class="fas fa-circle" style="color: var(--color-gold); font-size: 0.5rem;"></i> Completed</span>
+                </div>
+              </div>
+            </div>
+            <div class="h-card-actions">
+              <button class="btn-icon" title="Lihat Ulang" onclick="injectNewResults('Sistem Rekomendasi E-Commerce Real-time'); document.getElementById('nav-btn-dashboard').click();"><i class="fas fa-eye"></i></button>
+              <button class="btn-icon delete" title="Hapus" onclick="this.closest('.history-item-card').remove(); showToast('Dihapus', 'Histori berhasil dihapus.', 'info')"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div id="settings-view" class="view-section">
+        <div class="settings-grid">
+          
+          
+          <div class="settings-profile-card">
+            <div class="settings-avatar-container">
+              <div class="settings-avatar-big">P</div>
+              <button class="btn-avatar-edit" title="Unggah Foto"><i class="fas fa-camera"></i></button>
+            </div>
+            <div class="settings-profile-info">
+              <h3>Peneliti Utama</h3>
+              <p>Institusi AuraRiset Global</p>
+              <span class="profile-role-badge">Peneliti Utama</span>
+            </div>
+          </div>
+
+          
+          <div class="premium-card">
+            <div class="card-title-container">
+              <h2 class="card-title"><i class="fas fa-sliders-h"></i> Informasi Pengguna</h2>
+            </div>
+            <form id="settings-profile-form" class="settings-form-card">
+              <div class="input-group">
+                <label class="input-label">Username Peneliti</label>
+                <input type="text" class="form-input" id="set-username" value="Peneliti Utama">
+              </div>
+              
+              <div class="input-group">
+                <label class="input-label">Alamat Email</label>
+                <input type="email" class="form-input" id="set-email" value="peneliti@aurariset.ac.id">
+              </div>
+
+              <div class="input-group">
+                <label class="input-label">Institusi</label>
+                <input type="text" class="form-input" value="Universitas Pembangunan Web FP">
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="showToast('Dibatalkan', 'Perubahan form pengaturan diabaikan.', 'warning')">Reset</button>
+                <button type="submit" class="btn-cta">Simpan Perubahan</button>
+              </div>
+            </form>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  
+  <div class="analysis-overlay" id="analysis-overlay">
+    <div class="analyzer-card">
+      <div class="scanner-container">
+        <div class="scan-ring"></div>
+        <div class="scan-pulse"></div>
+        <i class="fas fa-brain scan-icon"></i>
+      </div>
+      
+      <h3 class="analysis-status-title">Analisis OpenAI Sedang Berlangsung</h3>
+      <p class="analysis-step-desc" id="analysis-step-desc">Menginisiasi analisis kesenjangan pustaka...</p>
+
+      <div class="scanner-progress-bar">
+        <div class="scanner-progress-fill" id="scanner-progress-fill"></div>
+      </div>
+
+      <div class="status-log-console" id="console-logs">
+        
+      </div>
+    </div>
+  </div>
+
+  
+  <script type="module" src="assets/js/app.js"></script>
+</body>
+</html>

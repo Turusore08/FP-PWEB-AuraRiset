@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraRiset — Secure Login</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  
+  <div class="aurora-bg">
+    <div class="aurora-orb orb-gold"></div>
+    <div class="aurora-orb orb-navy"></div>
+  </div>
+  <canvas id="canvas-particles"></canvas>
+
+  <div class="auth-container">
+    <div class="auth-card">
+      <a href="index.html" class="auth-logo">
+        <div class="logo-icon-container">
+          <div class="logo-halo"></div>
+          <i class="fas fa-book-open logo-book"></i>
+        </div>
+        <span>AuraRiset</span>
+      </a>
+
+      <h2 class="auth-title">Selamat Datang Kembali</h2>
+      <p class="auth-subtitle">Masukkan kredensial Anda untuk masuk ke sistem analisis gap riset</p>
+
+      <form id="login-form" class="auth-form" action="dashboard.html" onsubmit="handleLoginSubmit(event)">
+        <div class="form-group-relative">
+          <input type="text" class="auth-input" placeholder="Username atau Email" id="login-username" required>
+          <i class="fas fa-user input-icon"></i>
+        </div>
+
+        <div class="form-group-relative">
+          <input type="password" class="auth-input" placeholder="Kata Sandi" id="login-password" required>
+          <i class="fas fa-lock input-icon"></i>
+          <i class="far fa-eye toggle-password" id="toggle-pwd-icon" onclick="togglePasswordVisibility()"></i>
+        </div>
+
+        <div class="auth-helpers">
+          <label class="remember-me">
+            <input type="checkbox" id="remember-check">
+            Ingat Sesi Saya
+          </label>
+          <a href="#" class="forgot-link" onclick="handleForgotPassword(event)">Lupa Kata Sandi?</a>
+        </div>
+
+        <button type="submit" class="btn-cta" style="width: 100%; justify-content: center; padding: 1rem; margin-top: 0.75rem;">
+          Masuk Sekarang
+          <i class="fas fa-sign-in-alt"></i>
+        </button>
+      </form>
+
+      <p class="auth-footer-text">
+        Belum memiliki akun? <a href="register.html">Daftar Peneliti Baru</a>
+      </p>
+    </div>
+  </div>
+
+  <script type="module" src="assets/js/app.js"></script>
+  <script>
+    
+    function togglePasswordVisibility() {
+      const pwdInput = document.getElementById('login-password');
+      const icon = document.getElementById('toggle-pwd-icon');
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        icon.className = 'far fa-eye-slash toggle-password';
+      } else {
+        pwdInput.type = 'password';
+        icon.className = 'far fa-eye toggle-password';
+      }
+    }
+
+    function handleLoginSubmit(event) {
+      event.preventDefault();
+      const user = document.getElementById('login-username').value.trim();
+      const pass = document.getElementById('login-password').value;
+
+      if (user === '' || pass === '') {
+        showToast('Error', 'Input tidak boleh kosong!', 'error');
+        return;
+      }
+
+      
+      showToast('Sesi Berhasil', `Kredensial valid. Selamat datang ${user}!`, 'success');
+      
+      
+      localStorage.setItem('aurariset_username', user);
+
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 1200);
+    }
+
+    function handleForgotPassword(event) {
+      event.preventDefault();
+      const user = document.getElementById('login-username').value.trim();
+      if (!user) {
+        showToast('Info', 'Masukkan username/email terlebih dahulu untuk reset password.', 'info');
+      } else {
+        showToast('Link Terkirim', `Tautan reset kata sandi telah dikirim ke: ${user}`, 'success');
+      }
+    }
+  </script>
+</body>
+</html>
