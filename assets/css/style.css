@@ -1036,13 +1036,13 @@ body {
 }
 
 
-.stagger-row {
+.stagger-row.stagger-init {
   opacity: 0;
   transform: translateY(10px);
   transition: transform 0.4s ease, opacity 0.4s ease;
 }
 
-.stagger-row.visible {
+.stagger-row.stagger-init.visible {
   opacity: 1;
   transform: translateY(0);
 }

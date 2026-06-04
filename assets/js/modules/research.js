@@ -240,7 +240,7 @@ export class Research {
     if (historyTbody) {
       const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
       const tr = document.createElement('tr');
-      tr.className = 'stagger-row';
+      tr.className = 'stagger-row stagger-init';
       tr.innerHTML = `
         <td class="research-title-cell" title="${match.topic}">${match.topic}</td>
         <td class="date-cell">${today}</td>
@@ -265,7 +265,7 @@ export class Research {
       comparisonTbody.innerHTML = '';
       match.results.forEach((res, i) => {
         const tr = document.createElement('tr');
-        tr.className = 'stagger-row';
+        tr.className = 'stagger-row stagger-init';
         tr.innerHTML = `
           <td class="year-cell">${res.year}</td>
           <td class="method-cell">${res.method}</td>
@@ -284,7 +284,7 @@ export class Research {
       const countRand = Math.floor(Math.random() * 4) + 3;
 
       const card = document.createElement('div');
-      card.className = 'history-item-card stagger-row';
+      card.className = 'history-item-card stagger-row stagger-init';
       card.innerHTML = `
         <div class="h-card-left">
           <div class="h-card-icon"><i class="fas fa-file-invoice"></i></div>

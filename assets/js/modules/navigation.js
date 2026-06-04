@@ -29,6 +29,7 @@ export class Navigation {
       }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
 
       document.querySelectorAll('.stagger-row').forEach(el => {
+        el.classList.add('stagger-init');
         observer.observe(el);
       });
     }
@@ -72,6 +73,7 @@ export class Navigation {
           const rows = targetSec.querySelectorAll('.stagger-row');
           rows.forEach((row, i) => {
             row.classList.remove('visible');
+            row.classList.add('stagger-init');
             setTimeout(() => {
               row.classList.add('visible');
             }, (i + 1) * 100);
@@ -90,6 +92,7 @@ export class Navigation {
 
     // Highlight default active staggered rows in current viewport
     document.querySelectorAll('.view-section.active .stagger-row').forEach((row, i) => {
+      row.classList.add('stagger-init');
       setTimeout(() => {
         row.classList.add('visible');
       }, (i + 1) * 100);
