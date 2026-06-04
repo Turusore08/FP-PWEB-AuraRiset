@@ -2,7 +2,7 @@
 // --- AURARISET PostgreSQL DATABASE CONNECTION WRAPPER ---
 
 $host = "localhost";
-$port = "5432";
+$port = "5433";
 $username = "postgres";
 $password = "postgres"; // Adjust password to match your local installation if needed
 $database = "aurariset_db";

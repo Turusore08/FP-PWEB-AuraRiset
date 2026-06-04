@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateProfileUI(initialState);
   
   // Trigger initial reactive numbers animation
-  animateStats(null, initialState.stats);
+  animateStats(initialState.stats);
 });
 
 /* --- REACTIVE EVENT OBSERVERS (OBSERVER DESIGN PATTERN) --- */

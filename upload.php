@@ -32,9 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 1. Validate PDF extension and MIME-type
     $allowedExts = ['pdf'];
-    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $mimeType = finfo_file($finfo, $fileTmpName);
-    finfo_close($finfo);
+    if (function_exists('finfo_open')) {
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $fileTmpName);
+    } else {
+        $mimeType = $file['type']; // Fallback to client-provided MIME type if extension is disabled
+    }
 
     if (!in_match_pdf($fileExt, $mimeType)) {
         http_response_code(400);
