@@ -7,6 +7,7 @@ import { Accordion } from './components/accordion.js';
 import { Particles } from './modules/particles.js';
 import { Navigation } from './modules/navigation.js';
 import { Research } from './modules/research.js';
+import { exportEvaluationsPDF, exportUsersPDF } from './modules/pdfExport.js';
 
 // Bootstrap App Components on Load
 document.addEventListener('DOMContentLoaded', () => {
@@ -20,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initProfileDropdown();
   initSettingsForm();
   initTableSearch();
+  initAdminDosenPDFExports();
 
   // Bootstrap Reactive Observers (Observer Pattern)
   setupObservers();
@@ -214,6 +216,44 @@ function initTableSearch() {
       }
     });
   });
+}
+
+/* --- ADMIN & DOSEN PDF EXPORTS WIREUP --- */
+function initAdminDosenPDFExports() {
+  const btnEvals = document.getElementById('btn-export-evaluations-pdf');
+  const btnUsers = document.getElementById('btn-export-users-pdf');
+
+  if (btnEvals) {
+    btnEvals.addEventListener('click', async () => {
+      try {
+        const response = await fetch('api/get_research.php');
+        const data = await response.json();
+        if (data.status === 'success' && data.history.length > 0) {
+          exportEvaluationsPDF(data.history);
+        } else {
+          ToastFactory.show('Peringatan', 'Tidak ada data evaluasi mahasiswa untuk diekspor.', 'warning');
+        }
+      } catch (err) {
+        ToastFactory.show('Error', 'Gagal memuat evaluasi mahasiswa.', 'error');
+      }
+    });
+  }
+
+  if (btnUsers) {
+    btnUsers.addEventListener('click', async () => {
+      try {
+        const response = await fetch('api/admin_users.php');
+        const data = await response.json();
+        if (data.status === 'success' && data.users.length > 0) {
+          exportUsersPDF(data.users);
+        } else {
+          ToastFactory.show('Peringatan', 'Tidak ada data pengguna untuk diekspor.', 'warning');
+        }
+      } catch (err) {
+        ToastFactory.show('Error', 'Gagal memuat data pengguna.', 'error');
+      }
+    });
+  }
 }
 
 // Expose Toast system globally to maintain backward compatibility with static forms

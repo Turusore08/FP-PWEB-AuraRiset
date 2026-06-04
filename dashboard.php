@@ -20,6 +20,9 @@ $email = htmlspecialchars($_SESSION['email']);
   <title>AuraRiset — Automated Research Gap Analysis Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="assets/css/style.css">
+  <!-- jsPDF and jsPDF-AutoTable for premium PDF reports -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
   <script>
     window.USER_SESSION = {
       username: <?php echo json_encode($_SESSION['username']); ?>,
@@ -264,6 +267,9 @@ $email = htmlspecialchars($_SESSION['email']);
                 <i class="fas fa-history"></i>
                 Histori Terbaru
               </h2>
+              <button class="btn-secondary" id="btn-export-recent-pdf" style="font-size: 0.82rem; padding: 0.4rem 0.8rem; display: flex; align-items: center; gap: 0.4rem; border-radius: 8px; border: 1px solid var(--border-gold); background: rgba(212, 175, 55, 0.05); color: var(--color-gold); cursor: pointer; transition: var(--transition-fast);">
+                <i class="fas fa-file-pdf"></i> Ekspor PDF
+              </button>
             </div>
             
             <div class="table-container">
@@ -290,6 +296,9 @@ $email = htmlspecialchars($_SESSION['email']);
               <i class="fas fa-columns"></i>
               Tabel Perbandingan Paper
             </h2>
+            <button class="btn-secondary" id="btn-export-comparison-pdf" style="font-size: 0.82rem; padding: 0.4rem 0.8rem; display: flex; align-items: center; gap: 0.4rem; border-radius: 8px; border: 1px solid var(--border-gold); background: rgba(212, 175, 55, 0.05); color: var(--color-gold); cursor: pointer; transition: var(--transition-fast);">
+              <i class="fas fa-file-pdf"></i> Ekspor PDF
+            </button>
           </div>
           
           <div class="bottom-table-container">
@@ -398,6 +407,9 @@ $email = htmlspecialchars($_SESSION['email']);
         <div class="premium-card section-full-width">
           <div class="card-title-container">
             <h2 class="card-title"><i class="fas fa-microscope"></i> Panel Evaluasi Penelitian Mahasiswa</h2>
+            <button class="btn-secondary" id="btn-export-evaluations-pdf" style="font-size: 0.82rem; padding: 0.4rem 0.8rem; display: flex; align-items: center; gap: 0.4rem; border-radius: 8px; border: 1px solid var(--border-gold); background: rgba(212, 175, 55, 0.05); color: var(--color-gold); cursor: pointer; transition: var(--transition-fast);">
+              <i class="fas fa-file-pdf"></i> Ekspor PDF
+            </button>
           </div>
           <p class="card-desc">Berikut adalah seluruh daftar pemetaan gap riset yang dijalankan oleh para peneliti/mahasiswa di dalam sistem.</p>
           
@@ -428,6 +440,9 @@ $email = htmlspecialchars($_SESSION['email']);
         <div class="premium-card section-full-width">
           <div class="card-title-container">
             <h2 class="card-title"><i class="fas fa-users-cog"></i> Manajemen Pengguna Sistem</h2>
+            <button class="btn-secondary" id="btn-export-users-pdf" style="font-size: 0.82rem; padding: 0.4rem 0.8rem; display: flex; align-items: center; gap: 0.4rem; border-radius: 8px; border: 1px solid var(--border-gold); background: rgba(212, 175, 55, 0.05); color: var(--color-gold); cursor: pointer; transition: var(--transition-fast);">
+              <i class="fas fa-file-pdf"></i> Ekspor PDF
+            </button>
           </div>
           <p class="card-desc">Kelola hak akses dan peranan akun pengguna AuraRiset secara langsung.</p>
           

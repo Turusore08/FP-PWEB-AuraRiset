@@ -3,6 +3,7 @@
 import { events } from '../core/events.js';
 import { store } from '../core/store.js';
 import { ToastFactory } from '../components/toast.js';
+import { exportResearchGapPDF, exportRecentScansPDF } from './pdfExport.js';
 
 // Simulated Research Database fallback for new topics
 const simulatedGapDatabase = [
@@ -39,6 +40,7 @@ export class Research {
   static init() {
     Research.initDragAndDrop();
     Research.initResearchSimulation();
+    Research.initPDFExportEvents();
     
     // Load historical scans from DB on page initialization
     Research.loadHistory();
@@ -47,6 +49,40 @@ export class Research {
     window.injectNewResults = (topicName) => {
       Research.loadHistory();
     };
+  }
+
+  /**
+   * Initialize PDF export button click events
+   */
+  static initPDFExportEvents() {
+    const btnComp = document.getElementById('btn-export-comparison-pdf');
+    const btnRecent = document.getElementById('btn-export-recent-pdf');
+
+    if (btnComp) {
+      btnComp.addEventListener('click', () => {
+        if (Research.activeTopic && Research.activeResults) {
+          exportResearchGapPDF(Research.activeTopic, Research.activeResults);
+        } else {
+          ToastFactory.show('Peringatan', 'Tidak ada data komparasi aktif untuk diekspor.', 'warning');
+        }
+      });
+    }
+
+    if (btnRecent) {
+      btnRecent.addEventListener('click', async () => {
+        try {
+          const response = await fetch('api/get_research.php');
+          const data = await response.json();
+          if (data.status === 'success' && data.history.length > 0) {
+            exportRecentScansPDF(data.history);
+          } else {
+            ToastFactory.show('Peringatan', 'Tidak ada riwayat penelitian untuk diekspor.', 'warning');
+          }
+        } catch (err) {
+          ToastFactory.show('Error', 'Gagal memuat riwayat untuk diekspor.', 'error');
+        }
+      });
+    }
   }
 
   /**
@@ -430,6 +466,7 @@ export class Research {
         </div>
         <div class="h-card-actions">
           <button class="btn-icon view-history-btn" title="Lihat Ulang"><i class="fas fa-eye"></i></button>
+          <button class="btn-icon download-pdf-btn" title="Cetak PDF" style="color: var(--color-gold);"><i class="fas fa-file-pdf"></i></button>
           ${deleteBtn}
         </div>
       `;
@@ -474,6 +511,12 @@ export class Research {
         if (dashBtn) dashBtn.click();
         Research.renderComparisonTable(item.topic, item.results);
       });
+
+      // Quick PDF generation trigger
+      card.querySelector('.download-pdf-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        exportResearchGapPDF(item.topic, item.results, item.author);
+      });
     });
   }
 
@@ -481,6 +524,10 @@ export class Research {
    * Render comparison rows inside bottom table mapping
    */
   static renderComparisonTable(topic, results) {
+    // Keep track of active scan details for quick PDF print triggers
+    Research.activeTopic = topic;
+    Research.activeResults = results;
+
     const tbody = document.querySelector('.comparison-table tbody');
     if (!tbody) return;
 
