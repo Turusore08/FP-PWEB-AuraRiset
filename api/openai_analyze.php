@@ -52,6 +52,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Read request body
     $data = json_decode(file_get_contents('php://input'), true);
     $topic = trim($data['topic'] ?? '');
+    
+    // Read dynamic limit, enforce minimum of 5 papers
+    $limit = isset($data['limit']) ? (int)$data['limit'] : 5;
+    if ($limit < 5) {
+        $limit = 5;
+    }
 
     if (empty($topic)) {
         http_response_code(400);
@@ -61,8 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Prepare system instructions for structured output format
     $system_message = "You are an expert academic research assistant specialized in SOTA (State of the Art) analysis. "
-                    . "Your task is to analyze the research topic provided by the user and formulate exactly 3 distinct, realistic comparison items (previous papers) showing the evolution of methods and their research gaps. "
-                    . "You must output your response in JSON format containing a top-level key called 'results' which holds an array of 3 objects.\n"
+                    . "Your task is to analyze the research topic provided by the user and formulate exactly {$limit} distinct, realistic comparison items (previous papers) showing the evolution of methods and their research gaps. "
+                    . "You must output your response in JSON format containing a top-level key called 'results' which holds an array of {$limit} objects.\n"
                     . "Each object inside the 'results' array must strictly follow this structure:\n"
                     . "1. 'year': An integer representing publication year (e.g. 2022, 2023, 2024, or 2025).\n"
                     . "2. 'method': A string representing the name of the state-of-the-art methodology used in the paper.\n"

@@ -229,7 +229,7 @@ $email = htmlspecialchars($_SESSION['email']);
               <i class="fas fa-cloud-upload-alt upload-icon"></i>
               <div class="upload-title">Tarik & Lepaskan File PDF</div>
               <div class="upload-subtitle">atau klik untuk menelusuri folder komputer (Maksimal 10 MB)</div>
-              <input type="file" id="file-input" class="file-input" accept="application/pdf">
+              <input type="file" id="file-input" class="file-input" accept="application/pdf" multiple>
             </div>
 
             <!-- Upload progress visual -->
@@ -370,7 +370,7 @@ $email = htmlspecialchars($_SESSION['email']);
                 </div>
                 <div class="input-group">
                   <label class="input-label">Jumlah Paper yang Dianalisis</label>
-                  <select class="select-custom">
+                  <select class="select-custom" id="limit-select">
                     <option value="5">5 Paper Teratas</option>
                     <option value="10">10 Paper Teratas</option>
                     <option value="20">20 Paper Teratas (Deep Scan)</option>

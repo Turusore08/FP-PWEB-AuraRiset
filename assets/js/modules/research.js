@@ -74,8 +74,8 @@ export class Research {
     dropZone.addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) handleUploadedFile(file);
+      const files = Array.from(e.target.files);
+      if (files.length > 0) handleUploadedFiles(files);
     });
 
     ['dragenter', 'dragover'].forEach(eventName => {
@@ -96,73 +96,92 @@ export class Research {
 
     dropZone.addEventListener('drop', (e) => {
       const dt = e.dataTransfer;
-      const file = dt.files[0];
-      if (file) handleUploadedFile(file);
+      const files = Array.from(dt.files);
+      if (files.length > 0) handleUploadedFiles(files);
     });
 
-    function handleUploadedFile(file) {
-      if (file.type !== 'application/pdf') {
+    function handleUploadedFiles(files) {
+      const pdfFiles = files.filter(file => file.type === 'application/pdf');
+
+      if (pdfFiles.length === 0) {
         ToastFactory.show('Error', 'Hanya dokumen berformat PDF yang didukung!', 'error');
         return;
       }
 
-      if (file.size > 10 * 1024 * 1024) { // 10MB
-        ToastFactory.show('Error', 'Ukuran file melebihi batas maksimal 10 MB!', 'error');
-        return;
+      // Check size for all files
+      for (const file of pdfFiles) {
+        if (file.size > 10 * 1024 * 1024) { // 10MB
+          ToastFactory.show('Error', `Ukuran file "${file.name}" melebihi batas maksimal 10 MB!`, 'error');
+          return;
+        }
       }
 
-      progressContainer.style.display = 'block';
-      progressFileName.textContent = file.name;
-      progressBarFill.style.width = '0%';
-      progressPercent.textContent = '0%';
+      let currentIndex = 0;
 
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', 'upload.php', true);
-
-      // Track physical upload progress
-      xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) {
-          const percentComplete = Math.round((e.loaded / e.total) * 100);
-          progressBarFill.style.width = `${percentComplete}%`;
-          progressPercent.textContent = `${percentComplete}%`;
+      const uploadNextFile = () => {
+        if (currentIndex >= pdfFiles.length) {
+          ToastFactory.show('Success', `${pdfFiles.length} file berhasil diunggah. Mulai analisis...`, 'success');
+          setTimeout(() => {
+            progressContainer.style.display = 'none';
+            const mergedTopic = pdfFiles.map(f => f.name.replace('.pdf', '')).join(', ');
+            Research.runAIScanner(mergedTopic);
+          }, 800);
+          return;
         }
-      });
 
-      xhr.onreadystatechange = () => {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-          if (xhr.status === 200) {
-            try {
-              const response = JSON.parse(xhr.responseText);
-              if (response.status === 'success') {
-                ToastFactory.show('Success', 'File berhasil diunggah. Mulai analisis...', 'success');
-                setTimeout(() => {
+        const file = pdfFiles[currentIndex];
+        progressContainer.style.display = 'block';
+        progressFileName.textContent = `Mengunggah (${currentIndex + 1}/${pdfFiles.length}): ${file.name}`;
+        progressBarFill.style.width = '0%';
+        progressPercent.textContent = '0%';
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'upload.php', true);
+
+        // Track physical upload progress
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            const percentComplete = Math.round((e.loaded / e.total) * 100);
+            progressBarFill.style.width = `${percentComplete}%`;
+            progressPercent.textContent = `${percentComplete}%`;
+          }
+        });
+
+        xhr.onreadystatechange = () => {
+          if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+              try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.status === 'success') {
+                  currentIndex++;
+                  uploadNextFile();
+                } else {
+                  ToastFactory.show('Error', response.message || `Gagal mengunggah ${file.name}.`, 'error');
                   progressContainer.style.display = 'none';
-                  Research.runAIScanner(file.name.replace('.pdf', ''));
-                }, 800);
-              } else {
-                ToastFactory.show('Error', response.message || 'Gagal mengunggah file.', 'error');
+                }
+              } catch (err) {
+                ToastFactory.show('Error', 'Respons server tidak valid.', 'error');
                 progressContainer.style.display = 'none';
               }
-            } catch (err) {
-              ToastFactory.show('Error', 'Respons server tidak valid.', 'error');
+            } else {
+              try {
+                const response = JSON.parse(xhr.responseText);
+                ToastFactory.show('Error', response.message || `Gagal mengunggah ${file.name}.`, 'error');
+              } catch (err) {
+                ToastFactory.show('Error', `Gagal mengunggah ${file.name} ke server.`, 'error');
+              }
               progressContainer.style.display = 'none';
             }
-          } else {
-            try {
-              const response = JSON.parse(xhr.responseText);
-              ToastFactory.show('Error', response.message || 'Gagal mengunggah file.', 'error');
-            } catch (err) {
-              ToastFactory.show('Error', 'Gagal mengunggah file ke server.', 'error');
-            }
-            progressContainer.style.display = 'none';
           }
-        }
+        };
+
+        xhr.send(formData);
       };
 
-      xhr.send(formData);
+      uploadNextFile();
     }
   }
 
@@ -202,6 +221,10 @@ export class Research {
 
     if (!overlay || !fill || !consoleEl || !stepText) return;
 
+    // Fetch limit from select-custom dropdown, default to 5 if not found
+    const limitSelect = document.getElementById('limit-select');
+    const limit = limitSelect ? parseInt(limitSelect.value) : 5;
+
     // Clear previous logs
     consoleEl.innerHTML = '';
     fill.style.width = '0%';
@@ -214,7 +237,7 @@ export class Research {
     const apiPromise = fetch('api/openai_analyze.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topic: topicName })
+      body: JSON.stringify({ topic: topicName, limit: limit })
     })
     .then(async response => {
       const data = await response.json();
@@ -239,7 +262,7 @@ export class Research {
       "[INFO] Parsing metadata... Extracted keywords: optimization, methodology, gap.",
       "[SUCCESS] Vector embeddings successfully calculated in 12ms.",
       "[INFO] Building comparison mapping graph...",
-      "[SUCCESS] Identified 3 critical methodology overlaps.",
+      `[SUCCESS] Identified ${limit} critical methodology overlaps.`,
       "[SUCCESS] Summary generated using GPT-4o context model."
     ];
 
