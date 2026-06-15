@@ -82,13 +82,17 @@ jobs:
             # 2. Pull the newly published image
             docker pull ghcr.io/${{ steps.prep.outputs.owner }}/${{ steps.prep.outputs.repo }}:latest
 
-            # 3. Stop and delete the active container if it exists
+            # 3. Create Docker network if it does not exist
+            docker network create aurariset-network || true
+
+            # 4. Stop and delete the active container if it exists
             docker stop aurariset-app || true
             docker rm aurariset-app || true
 
-            # 4. Start the container with secure environment variables passed from secrets
+            # 5. Start the container with secure environment variables passed from secrets on the shared network
             docker run -d \
               --name aurariset-app \
+              --network aurariset-network \
               -p 80:80 \
               -e OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
               -e DB_HOST="${{ secrets.DB_HOST }}" \
@@ -99,6 +103,6 @@ jobs:
               --restart always \
               ghcr.io/${{ steps.prep.outputs.owner }}/${{ steps.prep.outputs.repo }}:latest
 
-            # 5. Prune dangling/old images to save server disk space
+            # 6. Prune dangling/old images to save server disk space
             docker image prune -f
 
