@@ -11,6 +11,12 @@ if (!isset($_SESSION['user_id'])) {
 
 // Helper to load configurations from .env
 function get_env_var($key, $default = null) {
+    // Check system environment variable first (e.g. passed in Docker run)
+    $val = getenv($key);
+    if ($val !== false && $val !== '') {
+        return $val;
+    }
+
     static $env = null;
     if ($env === null) {
         $env = [];
