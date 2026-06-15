@@ -1,11 +1,11 @@
 <?php
 // --- AURARISET PostgreSQL DATABASE CONNECTION WRAPPER ---
 
-$host = "localhost";
-$port = "5433";
-$username = "postgres";
-$password = "postgres"; // Adjust password to match your local installation if needed
-$database = "aurariset_db";
+$host = getenv('DB_HOST') ?: "localhost";
+$port = getenv('DB_PORT') ?: "5433";
+$username = getenv('DB_USER') ?: "postgres";
+$password = getenv('DB_PASS') ?: "postgres";
+$database = getenv('DB_NAME') ?: "aurariset_db";
 
 try {
     // Create connection to PostgreSQL server

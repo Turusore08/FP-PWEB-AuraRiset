@@ -1,0 +1,42 @@
+# --- Render Infrastructure Blueprint (render.yaml) ---
+# Use this file to deploy AuraRiset instantly on Render (https://render.com)
+
+services:
+  # 1. PHP Apache Web Service
+  - type: web
+    name: aurariset-app
+    env: php
+    plan: free
+    buildCommand: "mkdir -p uploads && chmod 777 uploads" # Initialize uploads folder
+    startCommand: "apache2-foreground" # Start Apache server
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: aurariset-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: aurariset-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: aurariset-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: aurariset-db
+          property: user
+      - key: DB_PASS
+        fromDatabase:
+          name: aurariset-db
+          property: password
+      - key: OPENAI_API_KEY
+        sync: false # Set your secure OpenAI API key in Render Dashboard env settings
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+
+databases:
+  # 2. PostgreSQL Instance
+  - name: aurariset-db
+    plan: free
+    postgresVersion: 15

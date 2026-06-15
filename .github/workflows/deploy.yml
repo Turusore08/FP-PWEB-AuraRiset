@@ -1,0 +1,53 @@
+# --- GitHub Actions CI/CD Pipeline ---
+name: AuraRiset CI/CD Production Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # Job 1: Integration & Verification (CI)
+  test-and-lint:
+    name: Lint & Verify Syntax
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP Environment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Verify PHP Syntax (Lint)
+        run: |
+          find . -name "*.php" ! -path "./vendor/*" -print0 | xargs -0 -n 1 -P 4 php -l
+
+      - name: Verify Environment Secrets Safety
+        run: |
+          if [ -f .env ]; then
+            echo "::warning::File .env terdeteksi di repositori Git. Harap gunakan gitignore untuk menghindari kebocoran kunci."
+          fi
+
+  # Job 2: CD Trigger Deployment (Only on Main push)
+  deploy:
+    name: Trigger Render Deployment
+    needs: test-and-lint
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Render Deploy Webhook
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "RENDER_DEPLOY_HOOK is not configured in Github Secrets. Skipping CD hook..."
+          else
+            curl -X GET "$RENDER_DEPLOY_HOOK"
+            echo "Successfully triggered Render deployment."
+          fi

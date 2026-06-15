@@ -219,7 +219,7 @@ export class Research {
   }
 
   /**
-   * SOTA scanner overlay pipeline simulation
+   * SOTA scanner overlay pipeline with real OpenAI API integration and fallback
    */
   static runAIScanner(topicName) {
     const overlay = document.getElementById('analysis-overlay');
@@ -237,13 +237,28 @@ export class Research {
     // Emit event that scanning has started
     events.publish('research:started', topicName);
 
+    // Asynchronously call OpenAI analyzer endpoint in background during loader sequence
+    const apiPromise = fetch('api/openai_analyze.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic: topicName })
+    })
+    .then(async response => {
+      const data = await response.json();
+      if (response.ok && data.status === 'success') {
+        return data.results;
+      } else {
+        throw new Error(data.message || 'Respons OpenAI tidak valid.');
+      }
+    });
+
     const steps = [
       { text: "Menginisiasi analisis kesenjangan pustaka...", percent: 15, delay: 800, log: "Initializing research pipeline...", type: "info" },
       { text: "Mengekstrak konsep kunci dan relasi taksonomi...", percent: 35, delay: 1500, log: `Concept extraction started for: "${topicName}"`, type: "info" },
       { text: "Mencocokkan paper terindex dari IEEE, ACM, dan Scopus...", percent: 60, delay: 2400, log: "Scraping databases... 42 relevant papers retrieved.", type: "success" },
       { text: "Mengalkulasi matriks perbedaan metode...", percent: 80, delay: 3500, log: "Cross-referencing methods & year of publications...", type: "info" },
       { text: "Merumuskan OpenAI Integrated Summary...", percent: 95, delay: 4600, log: "Querying OpenAI API model for research gap synthesis...", type: "success" },
-      { text: "Analisis berhasil dituntaskan!", percent: 100, delay: 5500, log: "System success! Writing results to local dashboard database.", type: "success" }
+      { text: "Analisis berhasil dituntaskan!", percent: 100, delay: 5500, log: "System success! Writing results to local database.", type: "success" }
     ];
 
     const logDetails = [
@@ -279,29 +294,51 @@ export class Research {
 
         if (idx === steps.length - 1) {
           setTimeout(async () => {
-            overlay.classList.remove('open');
-            
-            // Build the results payload
-            let match = simulatedGapDatabase.find(x => topicName.toLowerCase().includes(x.topic.toLowerCase()) || x.topic.toLowerCase().includes(topicName.toLowerCase()));
-            if (!match) {
-              const cleanTopic = topicName.charAt(0).toUpperCase() + topicName.slice(1);
-              match = {
-                topic: cleanTopic,
-                results: [
-                  { year: 2023, method: "State-of-the-Art Baseline", gap: `Akurasi masih inkonsisten jika diterapkan pada sub-topik ${cleanTopic}.`, summary: "Studi terdahulu tidak mengeksplorasi skalabilitas real-world." },
-                  { year: 2024, method: "Advanced Neural Framework", gap: `Overhead komputasi bertambah pesat tanpa efisiensi memori yang memadai.`, summary: "Model yang ada lambat beradaptasi pada variabilitas runtime." },
-                  { year: 2025, method: `AuraRiset Custom ${cleanTopic.split(' ')[0]}`, gap: "Belum teruji optimal pada data heterogen skala industri.", summary: `Menyisakan kesenjangan penting untuk penggabungan arsitektur terpadu.` }
-                ]
+            try {
+              // Wait for OpenAI API call to complete
+              const apiResults = await apiPromise;
+              
+              overlay.classList.remove('open');
+              
+              const match = {
+                topic: topicName.charAt(0).toUpperCase() + topicName.slice(1),
+                results: apiResults
               };
+
+              // Save results to PostgreSQL database via API
+              await Research.saveScanResult(match.topic, match.results);
+
+              // Publish SOTA completed event
+              events.publish('research:completed', match);
+              
+              ToastFactory.show('Sukses', 'Analisis gap OpenAI berhasil dirumuskan!', 'success');
+            } catch (err) {
+              console.warn("OpenAI API integration unavailable, falling back to simulated model:", err);
+              
+              // Fallback to local offline simulated gap database
+              let match = simulatedGapDatabase.find(x => topicName.toLowerCase().includes(x.topic.toLowerCase()) || x.topic.toLowerCase().includes(topicName.toLowerCase()));
+              if (!match) {
+                const cleanTopic = topicName.charAt(0).toUpperCase() + topicName.slice(1);
+                match = {
+                  topic: cleanTopic,
+                  results: [
+                    { year: 2023, method: "State-of-the-Art Baseline", gap: `Akurasi masih inkonsisten jika diterapkan pada sub-topik ${cleanTopic}.`, summary: "Studi terdahulu tidak mengeksplorasi skalabilitas real-world." },
+                    { year: 2024, method: "Advanced Neural Framework", gap: `Overhead komputasi bertambah pesat tanpa efisiensi memori yang memadai.`, summary: "Model yang ada lambat beradaptasi pada variabilitas runtime." },
+                    { year: 2025, method: `AuraRiset Custom ${cleanTopic.split(' ')[0]}`, gap: "Belum teruji optimal pada data heterogen skala industri.", summary: `Menyisakan kesenjangan penting untuk penggabungan arsitektur terpadu.` }
+                  ]
+                };
+              }
+
+              overlay.classList.remove('open');
+              
+              // Save simulated results
+              await Research.saveScanResult(match.topic, match.results);
+
+              // Publish SOTA completed event
+              events.publish('research:completed', match);
+              
+              ToastFactory.show('Selesai (Simulasi)', 'Analisis gap selesai dirumuskan (Mode Offline / Fallback).', 'warning');
             }
-
-            // Save results to PostgreSQL database via API
-            await Research.saveScanResult(match.topic, match.results);
-
-            // Publish SOTA completed event
-            events.publish('research:completed', match);
-            
-            ToastFactory.show('Sukses', 'Analisis gap selesai ditambahkan ke dashboard!', 'success');
           }, 1000);
         }
       }, step.delay);

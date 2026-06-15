@@ -1,0 +1,27 @@
+# --- AuraRiset Git Ignore Configurations ---
+
+# Sensitive Environment Configurations (API Keys, DB Credentials)
+.env
+.env.local
+.env.*.local
+
+# User Uploaded Documents
+uploads/
+/uploads/*
+!uploads/.gitkeep
+
+# IDE Settings and System Files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# PHP Dependencies / Composer vendor (if any)
+vendor/
+composer.lock

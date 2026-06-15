@@ -1,0 +1,28 @@
+# --- AuraRiset Docker Ignore Configurations ---
+
+# Exclude sensitive environment secrets
+.env
+.env.*
+*.local
+
+# Exclude local user uploads
+uploads/*
+/uploads/
+!uploads/.gitkeep
+
+# Exclude git repository details
+.git
+.github
+.gitignore
+
+# Exclude IDE, system metadata and documentation
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+walkthrough.md
+database.sql
+README.md
+Dockerfile
+.dockerignore
+render.yaml
