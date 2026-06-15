@@ -1,5 +1,5 @@
 <?php
-// --- AURARISET SECURE RESEARCHER DASHBOARD PANEL ---
+// --- AURARISET SECURE RESEARCHER DASHBOARD PANEL --
 session_start();
 
 // Strict session check
