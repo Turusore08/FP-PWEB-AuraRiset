@@ -398,22 +398,8 @@ async function loadReviewResearch() {
           if (dashBtn) dashBtn.click();
           
           // Inject comparison table with research.js Comparison renderer
-          const tbodyComp = document.querySelector('.comparison-table tbody');
-          if (tbodyComp && item.results) {
-            tbodyComp.innerHTML = '';
-            item.results.forEach((res) => {
-              const trComp = document.createElement('tr');
-              trComp.className = 'stagger-row visible';
-              trComp.innerHTML = `
-                <td class="year-cell">${res.year}</td>
-                <td class="method-cell">${res.method}</td>
-                <td class="gap-cell">${res.gap}</td>
-                <td class="ai-summary-cell">${res.summary}</td>
-              `;
-              tbodyComp.appendChild(trComp);
-            });
-            ToastFactory.show('Peneliti: ' + (item.author || 'Mahasiswa'), `Memuat gap riset: "${item.topic}"`, 'success');
-          }
+          Research.renderComparisonTable(item.topic, item.results);
+          ToastFactory.show('Peneliti: ' + (item.author || 'Mahasiswa'), `Memuat gap riset: "${item.topic}"`, 'success');
         });
       });
     } else {

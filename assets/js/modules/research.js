@@ -5,34 +5,6 @@ import { store } from '../core/store.js';
 import { ToastFactory } from '../components/toast.js';
 import { exportResearchGapPDF, exportRecentScansPDF } from './pdfExport.js';
 
-// Simulated Research Database fallback for new topics
-const simulatedGapDatabase = [
-  {
-    topic: "Optimasi Query Database Terdistribusi",
-    results: [
-      { year: 2023, method: "Two-Phase Commit (2PC)", gap: "Skalabilitas rendah pada latensi jaringan tinggi.", summary: "Penggunaan 2PC standar dalam cloud latency ekstrim memicu bottlenecks yang signifikan." },
-      { year: 2024, method: "Raft Consensus Protocol", gap: "Overhead koordinasi pemimpin berlebih saat replika tumbuh.", summary: "Menunjukkan adanya overhead saat konsensus pemimpin harus melintasi region geografis berbeda." },
-      { year: 2025, method: "AuraRiset Hybrid Sync", gap: "Belum dievaluasi pada sistem multi-cloud dengan partisi dinamis.", summary: "Kami menemukan peluang penggabungan sinkronisasi hibrid berbasis heuristik untuk toleransi partisi." }
-    ]
-  },
-  {
-    topic: "Deteksi Kanker Paru dengan Deep Learning",
-    results: [
-      { year: 2022, method: "3D Convolutional Network (CNN)", gap: "Kebutuhan komputasi sangat intensif untuk citra CT volumetrik.", summary: "Kurang efisien jika diaplikasikan di perangkat medis portabel pedesaan." },
-      { year: 2023, method: "Vision Transformers (ViT)", gap: "Membutuhkan dataset berlabel raksasa untuk menghindari overfitting.", summary: "Akurasi anjlok drastis saat dataset terbatas pada sampel klinis kecil lokal." },
-      { year: 2025, method: "AuraRiset Semi-Supervised ViT", gap: "Belum menguji transferability di seluruh modalitas pencitraan (PET/MRI).", summary: "Gap analisis menunjukkan peluang pemodelan adaptif untuk transisi antar modalitas pindaian medis." }
-    ]
-  },
-  {
-    topic: "Sistem Rekomendasi E-Commerce Real-time",
-    results: [
-      { year: 2023, method: "Collaborative Filtering", gap: "Masalah 'Cold-Start' ekstrim pada pengguna baru terdaftar.", summary: "Peringkat akurasi sistem menurun hingga 40% ketika interaksi historis pengguna masih nol." },
-      { year: 2024, method: "Graph Neural Networks (GNN)", gap: "Latency komputasi grafik tinggi menghambat respons sub-detik.", summary: "Mengalami delay pemrosesan grafik saat session load puncak e-commerce." },
-      { year: 2025, method: "AuraRiset Contextual GNN", gap: "Belum mensinkronkan preferensi implisit multi-perangkat secara instan.", summary: "Peluang penulisan gap riset pada sinkronisasi state instan antar gawai yang digunakan pengguna." }
-    ]
-  }
-];
-
 export class Research {
   /**
    * Bootstrap PDF Upload drag-and-drop triggers and analysis starters
@@ -41,6 +13,7 @@ export class Research {
     Research.initDragAndDrop();
     Research.initResearchSimulation();
     Research.initPDFExportEvents();
+    Research.initChatbot();
     
     // Load historical scans from DB on page initialization
     Research.loadHistory();
@@ -313,31 +286,9 @@ export class Research {
               
               ToastFactory.show('Sukses', 'Analisis gap OpenAI berhasil dirumuskan!', 'success');
             } catch (err) {
-              console.warn("OpenAI API integration unavailable, falling back to simulated model:", err);
-              
-              // Fallback to local offline simulated gap database
-              let match = simulatedGapDatabase.find(x => topicName.toLowerCase().includes(x.topic.toLowerCase()) || x.topic.toLowerCase().includes(topicName.toLowerCase()));
-              if (!match) {
-                const cleanTopic = topicName.charAt(0).toUpperCase() + topicName.slice(1);
-                match = {
-                  topic: cleanTopic,
-                  results: [
-                    { year: 2023, method: "State-of-the-Art Baseline", gap: `Akurasi masih inkonsisten jika diterapkan pada sub-topik ${cleanTopic}.`, summary: "Studi terdahulu tidak mengeksplorasi skalabilitas real-world." },
-                    { year: 2024, method: "Advanced Neural Framework", gap: `Overhead komputasi bertambah pesat tanpa efisiensi memori yang memadai.`, summary: "Model yang ada lambat beradaptasi pada variabilitas runtime." },
-                    { year: 2025, method: `AuraRiset Custom ${cleanTopic.split(' ')[0]}`, gap: "Belum teruji optimal pada data heterogen skala industri.", summary: `Menyisakan kesenjangan penting untuk penggabungan arsitektur terpadu.` }
-                  ]
-                };
-              }
-
+              console.error("OpenAI API analysis failed:", err);
               overlay.classList.remove('open');
-              
-              // Save simulated results
-              await Research.saveScanResult(match.topic, match.results);
-
-              // Publish SOTA completed event
-              events.publish('research:completed', match);
-              
-              ToastFactory.show('Selesai (Simulasi)', 'Analisis gap selesai dirumuskan (Mode Offline / Fallback).', 'warning');
+              ToastFactory.show('Error', err.message || 'Gagal menjalankan analisis gap OpenAI.', 'error');
             }
           }, 1000);
         }
@@ -575,6 +526,7 @@ export class Research {
           <td colspan="4" style="text-align: center; color: var(--color-text-muted);">Tidak ada data komparasi.</td>
         </tr>
       `;
+      Research.updateChatbotState(false);
       return;
     }
 
@@ -589,5 +541,213 @@ export class Research {
       `;
       tbody.appendChild(tr);
     });
+
+    Research.updateChatbotState(true);
+  }
+
+  /**
+   * Initialize Chatbot View, tab switches, and event handlers
+   */
+  static initChatbot() {
+    Research.chatHistory = [];
+    
+    // Tab toggling events
+    const tabTable = document.getElementById('btn-tab-table');
+    const tabChatbot = document.getElementById('btn-tab-chatbot');
+    const tableContainer = document.getElementById('analysis-table-container');
+    const chatbotContainer = document.getElementById('analysis-chatbot-container');
+    const exportBtn = document.getElementById('btn-export-comparison-pdf');
+    const cardTitle = document.getElementById('comparison-card-title');
+    const cardIcon = document.getElementById('comparison-card-icon');
+
+    if (tabTable && tabChatbot && tableContainer && chatbotContainer) {
+      tabTable.addEventListener('click', () => {
+        tabTable.classList.add('active');
+        tabChatbot.classList.remove('active');
+        tableContainer.style.display = 'block';
+        chatbotContainer.classList.remove('active');
+        if (exportBtn) exportBtn.style.display = 'flex';
+        if (cardTitle) cardTitle.textContent = "Tabel Perbandingan Paper";
+        if (cardIcon) {
+          cardIcon.className = "fas fa-columns";
+        }
+      });
+
+      tabChatbot.addEventListener('click', () => {
+        tabChatbot.classList.add('active');
+        tabTable.classList.remove('active');
+        tableContainer.style.display = 'none';
+        chatbotContainer.classList.add('active');
+        if (exportBtn) exportBtn.style.display = 'none';
+        if (cardTitle) cardTitle.textContent = "Chatbot Asisten AI";
+        if (cardIcon) {
+          cardIcon.className = "fas fa-comments";
+        }
+        
+        // Scroll messages to bottom in case view is switched
+        const messagesArea = document.getElementById('chat-messages-area');
+        if (messagesArea) {
+          messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+      });
+    }
+
+    // Send chat events
+    const chatInput = document.getElementById('chat-msg-input');
+    const sendBtn = document.getElementById('btn-send-msg');
+    
+    if (chatInput && sendBtn) {
+      const handleSend = async () => {
+        const text = chatInput.value.trim();
+        if (!text || !Research.activeTopic) return;
+        
+        // Disable input during AI generation
+        chatInput.setAttribute('disabled', 'true');
+        sendBtn.setAttribute('disabled', 'true');
+        
+        // Append user message
+        Research.appendChatMessage('user', text);
+        chatInput.value = '';
+        
+        // Append loading indicator
+        const loadingId = Research.appendChatLoading();
+        
+        try {
+          const response = await fetch('api/openai_chat.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              topic: Research.activeTopic,
+              results: Research.activeResults,
+              message: text,
+              history: Research.chatHistory
+            })
+          });
+          
+          const data = await response.json();
+          Research.removeChatLoading(loadingId);
+          
+          if (response.ok && data.status === 'success') {
+            Research.appendChatMessage('bot', data.reply);
+            // Save to local conversation history
+            Research.chatHistory.push({ role: 'user', content: text });
+            Research.chatHistory.push({ role: 'assistant', content: data.reply });
+          } else {
+            Research.appendChatMessage('system', data.message || 'Gagal merumuskan jawaban dari OpenAI.');
+          }
+        } catch (err) {
+          Research.removeChatLoading(loadingId);
+          Research.appendChatMessage('system', 'Terjadi kesalahan koneksi jaringan.');
+        } finally {
+          chatInput.removeAttribute('disabled');
+          sendBtn.removeAttribute('disabled');
+          chatInput.focus();
+        }
+      };
+      
+      sendBtn.addEventListener('click', handleSend);
+      chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          handleSend();
+        }
+      });
+    }
+  }
+
+  /**
+   * Update fields status and greeting context message
+   */
+  static updateChatbotState(hasActiveAnalysis) {
+    const chatInput = document.getElementById('chat-msg-input');
+    const sendBtn = document.getElementById('btn-send-msg');
+    const messagesArea = document.getElementById('chat-messages-area');
+    
+    Research.chatHistory = []; // Reset conversation history
+
+    if (!messagesArea) return;
+
+    if (hasActiveAnalysis) {
+      if (chatInput) chatInput.removeAttribute('disabled');
+      if (sendBtn) sendBtn.removeAttribute('disabled');
+      
+      messagesArea.innerHTML = `
+        <div class="chat-bubble bot-message">
+          <p><strong>Asisten AI AuraRiset:</strong> Halo! Saya telah memuat analisis gap penelitian untuk topik <strong>"${Research.activeTopic}"</strong>.</p>
+          <p>Mari berdiskusi! Anda dapat bertanya mengenai detail metodologi, celah kebaruan riset, atau saran perumusan novelty berikutnya.</p>
+        </div>
+      `;
+    } else {
+      if (chatInput) {
+        chatInput.setAttribute('disabled', 'true');
+        chatInput.value = '';
+      }
+      if (sendBtn) sendBtn.setAttribute('disabled', 'true');
+      
+      messagesArea.innerHTML = `
+        <div class="chat-bubble bot-message">
+          <p><strong>Asisten AI AuraRiset:</strong> Halo! Silakan pilih atau jalankan analisis riset di atas terlebih dahulu, lalu tanyakan apa saja terkait topik penelitian atau celah kebaruan metodologi tersebut.</p>
+        </div>
+      `;
+    }
+  }
+
+  /**
+   * Append individual message row to chat viewport
+   */
+  static appendChatMessage(role, text) {
+    const messagesArea = document.getElementById('chat-messages-area');
+    if (!messagesArea) return;
+    
+    const bubble = document.createElement('div');
+    bubble.className = `chat-bubble ${role}-message`;
+    
+    if (role === 'bot') {
+      const formatted = text
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      bubble.innerHTML = `<p><strong>Asisten AI AuraRiset:</strong> ${formatted}</p>`;
+    } else if (role === 'system') {
+      bubble.innerHTML = `<p><strong>[Sistem Error]</strong> ${text}</p>`;
+    } else {
+      bubble.textContent = text;
+    }
+    
+    messagesArea.appendChild(bubble);
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+  }
+
+  /**
+   * Show animated loading indicator
+   */
+  static appendChatLoading() {
+    const messagesArea = document.getElementById('chat-messages-area');
+    if (!messagesArea) return null;
+    
+    const loadingId = 'loading-' + Date.now();
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble bot-message';
+    bubble.id = loadingId;
+    bubble.innerHTML = `
+      <div class="chat-loading-dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <span style="font-size: 0.82rem; color: var(--color-text-muted); margin-left: 8px;">Asisten AI sedang mengetik...</span>
+    `;
+    
+    messagesArea.appendChild(bubble);
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+    return loadingId;
+  }
+
+  /**
+   * Remove specific loading block
+   */
+  static removeChatLoading(loadingId) {
+    if (!loadingId) return;
+    const el = document.getElementById(loadingId);
+    if (el) el.remove();
   }
 }

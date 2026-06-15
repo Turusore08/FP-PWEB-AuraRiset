@@ -289,19 +289,25 @@ $email = htmlspecialchars($_SESSION['email']);
           </div>
         </div>
 
-        <!-- C. TABEL PERBANDINGAN PAPER (BOTTOM) -->
+        <!-- C. TABEL PERBANDINGAN & CHATBOT PANEL (BOTTOM) -->
         <div class="premium-card stagger-row" id="comparison-wide-card">
-          <div class="card-title-container">
-            <h2 class="card-title">
-              <i class="fas fa-columns"></i>
-              Tabel Perbandingan Paper
-            </h2>
+          <div class="card-title-container" style="flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+              <h2 class="card-title" style="margin-bottom: 0;">
+                <i class="fas fa-columns" id="comparison-card-icon"></i>
+                <span id="comparison-card-title">Tabel Perbandingan Paper</span>
+              </h2>
+              <div class="history-filters" style="margin-bottom: 0; display: flex; gap: 0.5rem;">
+                <button class="filter-btn active" id="btn-tab-table" style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">Tabel Perbandingan</button>
+                <button class="filter-btn" id="btn-tab-chatbot" style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">Chatbot Analisis</button>
+              </div>
+            </div>
             <button class="btn-secondary" id="btn-export-comparison-pdf" style="font-size: 0.82rem; padding: 0.4rem 0.8rem; display: flex; align-items: center; gap: 0.4rem; border-radius: 8px; border: 1px solid var(--border-gold); background: rgba(212, 175, 55, 0.05); color: var(--color-gold); cursor: pointer; transition: var(--transition-fast);">
               <i class="fas fa-file-pdf"></i> Ekspor PDF
             </button>
           </div>
           
-          <div class="bottom-table-container">
+          <div class="bottom-table-container" id="analysis-table-container">
             <table class="comparison-table">
               <thead>
                 <tr>
@@ -318,6 +324,21 @@ $email = htmlspecialchars($_SESSION['email']);
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- Chatbot UI Section -->
+          <div class="chatbot-container" id="analysis-chatbot-container">
+            <div class="chat-messages-area" id="chat-messages-area">
+              <div class="chat-bubble bot-message">
+                <p><strong>Asisten AI AuraRiset:</strong> Halo! Silakan pilih atau jalankan analisis riset di atas, lalu tanyakan apa saja terkait topik penelitian atau celah kebaruan metodologi tersebut.</p>
+              </div>
+            </div>
+            <div class="chat-input-wrapper">
+              <input type="text" id="chat-msg-input" class="chat-msg-input" placeholder="Tanyakan tentang metodologi, batasan, atau saran pengembangan..." disabled>
+              <button id="btn-send-msg" class="btn-send-msg" disabled>
+                Kirim <i class="fas fa-paper-plane"></i>
+              </button>
+            </div>
           </div>
         </div>
 

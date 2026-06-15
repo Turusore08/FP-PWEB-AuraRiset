@@ -1,6 +1,23 @@
 <?php
 // --- AURARISET PostgreSQL DATABASE CONNECTION WRAPPER ---
 
+// Load configurations from .env if available
+function load_env() {
+    $envPath = __DIR__ . '/.env';
+    if (file_exists($envPath)) {
+        $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (empty($line) || strpos($line, '#') === 0) continue;
+            if (strpos($line, '=') !== false) {
+                list($name, $value) = explode('=', $line, 2);
+                putenv(trim($name) . '=' . trim($value));
+            }
+        }
+    }
+}
+load_env();
+
 $host = getenv('DB_HOST') ?: "localhost";
 $port = getenv('DB_PORT') ?: "5433";
 $username = getenv('DB_USER') ?: "postgres";
