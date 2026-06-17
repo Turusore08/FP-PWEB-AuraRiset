@@ -228,7 +228,7 @@ $email = htmlspecialchars($_SESSION['email']);
             <div class="drag-drop-zone" id="drag-drop-zone">
               <i class="fas fa-cloud-upload-alt upload-icon"></i>
               <div class="upload-title">Tarik & Lepaskan File PDF</div>
-              <div class="upload-subtitle">atau klik untuk menelusuri folder komputer (Maksimal 10 MB)</div>
+              <div class="upload-subtitle">atau klik untuk menelusuri folder komputer (Maksimal 10 MB per file)</div>
               <input type="file" id="file-input" class="file-input" accept="application/pdf" multiple>
             </div>
 

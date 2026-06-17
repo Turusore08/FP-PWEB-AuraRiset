@@ -13,6 +13,11 @@ RUN a2enmod rewrite
 # 3. Configure Document Root & AllowOverride
 RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
 
+# Configure PHP upload limits (supports up to 10MB per file with safe overheads)
+RUN echo "upload_max_filesize = 12M" > /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "post_max_size = 25M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/uploads.ini
+
 # 4. Set working directory
 WORKDIR /var/www/html
 

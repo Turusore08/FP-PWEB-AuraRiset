@@ -37,7 +37,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Extract file extension securely
     $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
-    // 1. Validate PDF extension and MIME-type
+    // 1. Validate error triggers FIRST
+    if ($fileError !== UPLOAD_ERR_OK) {
+        http_response_code(400);
+        $errorMessage = "Terjadi kesalahan saat mengunggah file.";
+        switch ($fileError) {
+            case UPLOAD_ERR_INI_SIZE:
+            case UPLOAD_ERR_FORM_SIZE:
+                $errorMessage = "Ukuran file \"$fileName\" melebihi batas maksimal yang diizinkan oleh server.";
+                break;
+            case UPLOAD_ERR_PARTIAL:
+                $errorMessage = "File \"$fileName\" hanya terunggah sebagian.";
+                break;
+            case UPLOAD_ERR_NO_FILE:
+                $errorMessage = "Tidak ada file yang diunggah.";
+                break;
+            case UPLOAD_ERR_NO_TMP_DIR:
+                $errorMessage = "Folder penyimpanan sementara tidak ditemukan di server.";
+                break;
+            case UPLOAD_ERR_CANT_WRITE:
+                $errorMessage = "Gagal menulis file \"$fileName\" ke penyimpanan server.";
+                break;
+            case UPLOAD_ERR_EXTENSION:
+                $errorMessage = "Proses unggah file \"$fileName\" dihentikan oleh ekstensi PHP.";
+                break;
+        }
+        echo json_encode(["status" => "error", "message" => $errorMessage]);
+        exit;
+    }
+
+    // 2. Validate PDF extension and MIME-type
     $allowedExts = ['pdf'];
     if (function_exists('finfo_open')) {
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -52,18 +81,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // 2. Validate error triggers
-    if ($fileError !== 0) {
-        http_response_code(400);
-        echo json_encode(["status" => "error", "message" => "Terjadi kesalahan saat mengunggah file."]);
-        exit;
-    }
-
     // 3. Validate file size (10 MB = 10,485,760 bytes)
     $maxSize = 10 * 1024 * 1024;
     if ($fileSize > $maxSize) {
         http_response_code(400);
-        echo json_encode(["status" => "error", "message" => "Ukuran file melebihi batas maksimal 10 MB!"]);
+        echo json_encode(["status" => "error", "message" => "Ukuran file \"$fileName\" melebihi batas maksimal 10 MB per file!"]);
         exit;
     }
 
